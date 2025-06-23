@@ -4,10 +4,10 @@ spring:
 
   # 데이터베이스 설정 (테스트용 H2)
   datasource:
-    url: jdbc:h2:mem:testdb # H2 DB 연결 주소 (In-Memory Mode)
+    url: jdbc:h2:mem:testdb # H2 연결 주소 (In-Memory Mode)
     driver-class-name: org.h2.Driver
-    username: username  # H2 DB 접속 ID (사용자 지정)
-    password: password  # H2 DB 접속 PW (사용자 지정)
+    username: username  # H2 접속 ID (사용자 지정)
+    password: password  # H2 접속 PW (사용자 지정)
 
   # JPA 설정
   jpa:
@@ -22,7 +22,7 @@ spring:
 
   # H2 콘솔
   h2:
-    console:  # H2 DB를 웹에서 관리할 수 있는 기능
+    console:  # H2를 웹에서 관리할 수 있는 기능
       enabled: true  # H2 Console 사용 여부
       path: /h2-console  # H2 Console 접속 주소
 
