@@ -24,28 +24,37 @@ public class Contract {
     @Column(name = "user_id", nullable = false)
     private String userId;
 
-    @Column(name = "title", nullable = false)
-    private String title;
-
-    @Column(name = "img_url", nullable = false)
-    private String imgUrl;
+    @Column(name = "img_s3_key", nullable = false)
+    private String imgS3Key;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
     @Builder
-    public Contract(String id, String userId, String title, String imgUrl, LocalDateTime createdAt) {
+    public Contract(String id, String userId, String imgS3Key, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.userId = userId;
-        this.title = title;
-        this.imgUrl = imgUrl;
+        this.imgS3Key = imgS3Key;
         this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     @PrePersist
     protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = now;
         }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 } 

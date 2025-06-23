@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * 사용자 레포지토리
+ * 사용자 Repository
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
@@ -18,7 +18,17 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByEmail(String email);
 
     /**
-     * 이메일 존재 여부 확인
+     * 이메일 중복 여부 확인
      */
     boolean existsByEmail(String email);
+
+    /**
+     * 삭제되지 않은 사용자 조회 (이메일)
+     */
+    Optional<User> findByEmailAndIsDeletedFalse(String email);
+
+    /**
+     * 삭제되지 않은 사용자 조회 (ID)
+     */
+    Optional<User> findByIdAndIsDeletedFalse(String id);
 } 

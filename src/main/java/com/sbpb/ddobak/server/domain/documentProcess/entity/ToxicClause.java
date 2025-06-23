@@ -28,8 +28,11 @@ public class ToxicClause {
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
-    @Column(name = "source_contract_tag")
-    private String sourceContractTag; // 저장 형식 정해지고
+    @Column(name = "reason_reference", columnDefinition = "TEXT")
+    private String reasonReference;
+
+    @Column(name = "source_contract_tag_idx")
+    private Integer sourceContractTagIdx;
 
     @Column(name = "warn_level", nullable = false)
     private Integer warnLevel; // 일단 저장해 둬야 나중에 유연한 대응 가능할 듯
@@ -40,12 +43,13 @@ public class ToxicClause {
 
     @Builder
     public ToxicClause(String id, String analysisId, String clause, String reason, 
-                      String sourceContractTag, Integer warnLevel) {
+                      String reasonReference, Integer sourceContractTagIdx, Integer warnLevel) {
         this.id = id;
         this.analysisId = analysisId;
         this.clause = clause;
         this.reason = reason;
-        this.sourceContractTag = sourceContractTag;
+        this.reasonReference = reasonReference;
+        this.sourceContractTagIdx = sourceContractTagIdx;
         this.warnLevel = warnLevel;
     }
 } 

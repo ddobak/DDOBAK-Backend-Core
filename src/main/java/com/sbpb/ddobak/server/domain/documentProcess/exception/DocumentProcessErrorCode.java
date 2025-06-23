@@ -58,6 +58,7 @@ public enum DocumentProcessErrorCode {
     ANALYSIS_ID_NOT_FOUND(HttpStatus.NOT_FOUND, 3301, "Analysis ID not found"),
     CONTRACT_ID_NOT_FOUND(HttpStatus.NOT_FOUND, 3302, "Contract ID not found"),
     UNAUTHORIZED_CONTRACT_ACCESS(HttpStatus.FORBIDDEN, 3303, "Unauthorized contract access"),
+    OCR_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, 3304, "OCR content not found"),
     RESULT_LOADING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 3350, "Result loading failed"),
     RESULT_FORMATTING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 3351, "Result formatting failed"),
     UNKNOWN_WEBVIEW_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 3352, "Unknown webview error");

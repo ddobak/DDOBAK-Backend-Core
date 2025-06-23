@@ -27,6 +27,15 @@ public class ContractAnalysis {
     @Column(name = "summary", columnDefinition = "TEXT")
     private String summary;
 
+    @Column(name = "ddobak_overall_comment")
+    private String ddobakOverallComment;
+
+    @Column(name = "ddobak_warning_comment")
+    private String ddobakWarningComment;
+
+    @Column(name = "ddobak_advice")
+    private String ddobakAdvice;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -39,10 +48,14 @@ public class ContractAnalysis {
 
     @Builder
     public ContractAnalysis(String id, String contractId, String summary, 
+                           String ddobakOverallComment, String ddobakWarningComment, String ddobakAdvice,
                            LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.contractId = contractId;
         this.summary = summary;
+        this.ddobakOverallComment = ddobakOverallComment;
+        this.ddobakWarningComment = ddobakWarningComment;
+        this.ddobakAdvice = ddobakAdvice;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -64,10 +77,14 @@ public class ContractAnalysis {
     }
 
     /**
-     * 분석 요약 업데이트
+     * 분석 결과 업데이트
      */
-    public void updateSummary(String summary) {
+    public void updateAnalysisResult(String summary, String ddobakOverallComment, 
+                                   String ddobakWarningComment, String ddobakAdvice) {
         this.summary = summary;
+        this.ddobakOverallComment = ddobakOverallComment;
+        this.ddobakWarningComment = ddobakWarningComment;
+        this.ddobakAdvice = ddobakAdvice;
         this.updatedAt = LocalDateTime.now();
     }
 } 

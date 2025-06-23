@@ -13,6 +13,14 @@ public class IdGenerator {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
+     * 범용 ID 생성 (8자리)
+     * 기본 엔티티 ID 생성용
+     */
+    public static String generate() {
+        return generateEntityId();
+    }
+
+    /**
      * 비즈니스 엔티티용 8자리 ID 생성 (대문자 + 숫자)
      * 예: C7X9K2M1, U3H8N5Q7
      */

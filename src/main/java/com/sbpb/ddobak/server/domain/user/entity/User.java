@@ -21,13 +21,13 @@ public class User {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "nickname", nullable = true)
+    @Column(name = "nickname")
     private String nickname;
 
     @Column(name = "created_at", nullable = false)
@@ -37,7 +37,7 @@ public class User {
     private LocalDateTime lastLoginAt;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 
     @Builder
     public User(String id, String email, String name, String nickname, 
@@ -48,7 +48,7 @@ public class User {
         this.nickname = nickname;
         this.createdAt = createdAt;
         this.lastLoginAt = lastLoginAt;
-        this.isDeleted = isDeleted;
+        this.isDeleted = isDeleted != null ? isDeleted : false;
     }
 
     @PrePersist
@@ -69,9 +69,16 @@ public class User {
     }
 
     /**
-     * 사용자 삭제 처리 (소프트 삭제)
+     * 사용자 삭제 (소프트 삭제)
      */
     public void delete() {
         this.isDeleted = true;
+    }
+
+    /**
+     * 닉네임 업데이트
+     */
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
     }
 } 
