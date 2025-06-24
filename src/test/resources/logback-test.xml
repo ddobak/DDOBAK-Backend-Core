@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 콘솔 출력 설정 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 테스트 환경별 로깅 레벨 설정 -->
+    
+    <!-- 🧪 테스트 관련 로그 (INFO 레벨) -->
+    <logger name="com.sbpb.ddobak.server.infrastructure.aws.lambda.TestLambdaAdapter" level="INFO"/>
+    <logger name="com.sbpb.ddobak.server.common.utils.aws.lambda.LambdaUtilTest" level="INFO"/>
+    
+    <!-- 🔧 Infrastructure 설정 로그 (WARN 레벨) -->
+    <logger name="com.sbpb.ddobak.server.infrastructure.aws.config" level="WARN"/>
+    <logger name="com.sbpb.ddobak.server.infrastructure.aws.client" level="WARN"/>
+    
+    <!-- ❌ AWS SDK 로그 최소화 (ERROR 레벨만) -->
+    <logger name="software.amazon.awssdk" level="ERROR"/>
+    <logger name="software.amazon.awssdk.auth" level="ERROR"/>
+    <logger name="software.amazon.awssdk.http" level="ERROR"/>
+    <logger name="software.amazon.awssdk.request" level="ERROR"/>
+    
+    <!-- 🌱 Spring 관련 로그 최소화 -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.boot" level="WARN"/>
+    <logger name="org.springframework.context" level="WARN"/>
+    <logger name="org.springframework.test" level="WARN"/>
+    
+    <!-- 📊 Hibernate/JPA 로그 최소화 -->
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="javax.persistence" level="WARN"/>
+    
+    <!-- 🔍 Jackson JSON 처리 로그 최소화 -->
+    <logger name="com.fasterxml.jackson" level="WARN"/>
+    
+    <!-- 📝 일반 애플리케이션 로그 (DEBUG 레벨) -->
+    <logger name="com.sbpb.ddobak.server" level="DEBUG"/>
+    
+    <!-- 루트 로거 설정 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration> 
