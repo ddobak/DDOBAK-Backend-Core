@@ -16,7 +16,7 @@ public class ValidationException extends BusinessException {
      * @param message 검증 실패 메시지
      */
     public ValidationException(String message) {
-        super(ErrorCode.INVALID_INPUT, message);
+        super(CommonErrorCode.INVALID_INPUT, message);
     }
 
     /**
@@ -27,7 +27,7 @@ public class ValidationException extends BusinessException {
      * @param reason 실패 이유
      */
     public ValidationException(String field, Object value, String reason) {
-        super(ErrorCode.INVALID_INPUT,
+        super(CommonErrorCode.INVALID_INPUT,
                 String.format("Validation failed for field '%s' with value '%s': %s", field, value, reason));
         addProperty("field", field);
         addProperty("value", value);
@@ -40,7 +40,7 @@ public class ValidationException extends BusinessException {
      * @param validationErrors 검증 오류 목록 (필드명=오류메시지 형태)
      */
     public ValidationException(java.util.Map<String, String> validationErrors) {
-        super(ErrorCode.INVALID_INPUT, "Multiple validation errors occurred");
+        super(CommonErrorCode.INVALID_INPUT, "Multiple validation errors occurred");
         addProperty("errors", validationErrors);
     }
 

@@ -1,8 +1,8 @@
 package com.sbpb.ddobak.server.domain.user.controller;
 
 import com.sbpb.ddobak.server.common.response.ApiResponse;
-import com.sbpb.ddobak.server.common.response.SuccessCode;
-import com.sbpb.ddobak.server.common.exception.ErrorCode;
+import com.sbpb.ddobak.server.domain.user.response.UserSuccessCode;
+import com.sbpb.ddobak.server.domain.user.exception.UserErrorCode;
 import com.sbpb.ddobak.server.domain.user.dto.UserProfileRequest;
 import com.sbpb.ddobak.server.domain.user.dto.UserProfileResponse;
 import com.sbpb.ddobak.server.domain.user.service.UserService;
@@ -37,13 +37,13 @@ public class UserController {
         
         try {
             UserProfileResponse.UserIdResponse response = userService.saveUserProfile(request);
-            return ApiResponse.success(response, SuccessCode.CREATED);
+            return ApiResponse.success(response, UserSuccessCode.PROFILE_CREATED);
         } catch (IllegalArgumentException e) {
             log.error("사용자 프로필 저장 실패: {}", e.getMessage());
-            return ApiResponse.error(ErrorCode.INVALID_INPUT, e.getMessage());
+            return ApiResponse.error(UserErrorCode.INVALID_USER_NAME, e.getMessage());
         } catch (Exception e) {
             log.error("사용자 프로필 저장 중 오류 발생: {}", e.getMessage(), e);
-            return ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR);
+            return ApiResponse.error(UserErrorCode.USER_PROFILE_CREATION_FAILED);
         }
     }
 
@@ -60,13 +60,13 @@ public class UserController {
         
         try {
             UserProfileResponse response = userService.getUserProfile(userId);
-            return ApiResponse.success(response, SuccessCode.DATA_RETRIEVED);
+            return ApiResponse.success(response, UserSuccessCode.PROFILE_RETRIEVED);
         } catch (IllegalArgumentException e) {
             log.error("사용자 프로필 조회 실패: {}", e.getMessage());
-            return ApiResponse.error(ErrorCode.ENTITY_NOT_FOUND);
+            return ApiResponse.error(UserErrorCode.USER_NOT_FOUND);
         } catch (Exception e) {
             log.error("사용자 프로필 조회 중 오류 발생: {}", e.getMessage(), e);
-            return ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR);
+            return ApiResponse.error(UserErrorCode.USER_PROFILE_CREATION_FAILED);
         }
     }
 
@@ -86,17 +86,19 @@ public class UserController {
         
         try {
             UserProfileResponse response = userService.updateUserProfile(userId, request);
-            return ApiResponse.success(response, SuccessCode.UPDATED);
+            return ApiResponse.success(response, UserSuccessCode.PROFILE_UPDATED);
         } catch (IllegalArgumentException e) {
             log.error("사용자 프로필 수정 실패: {}", e.getMessage());
             if (e.getMessage().contains("찾을 수 없습니다")) {
-                return ApiResponse.error(ErrorCode.ENTITY_NOT_FOUND);
+                return ApiResponse.error(UserErrorCode.USER_NOT_FOUND);
+            } else if (e.getMessage().contains("비활성")) {
+                return ApiResponse.error(UserErrorCode.USER_INACTIVE);
             } else {
-                return ApiResponse.error(ErrorCode.INVALID_INPUT);
+                return ApiResponse.error(UserErrorCode.INVALID_USER_NAME);
             }
         } catch (Exception e) {
             log.error("사용자 프로필 수정 중 오류 발생: {}", e.getMessage(), e);
-            return ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR);
+            return ApiResponse.error(UserErrorCode.USER_PROFILE_UPDATE_FAILED);
         }
     }
 
@@ -113,17 +115,19 @@ public class UserController {
         
         try {
             userService.withdrawUser(userId);
-            return ApiResponse.success(SuccessCode.DELETED);
+            return ApiResponse.success(UserSuccessCode.USER_WITHDRAWN);
         } catch (IllegalArgumentException e) {
             log.error("회원 탈퇴 실패: {}", e.getMessage());
             if (e.getMessage().contains("찾을 수 없습니다")) {
-                return ApiResponse.error(ErrorCode.ENTITY_NOT_FOUND);
+                return ApiResponse.error(UserErrorCode.USER_NOT_FOUND);
+            } else if (e.getMessage().contains("이미 탈퇴")) {
+                return ApiResponse.error(UserErrorCode.USER_ALREADY_WITHDRAWN);
             } else {
-                return ApiResponse.error(ErrorCode.INVALID_INPUT);
+                return ApiResponse.error(UserErrorCode.USER_INACTIVE);
             }
         } catch (Exception e) {
             log.error("회원 탈퇴 중 오류 발생: {}", e.getMessage(), e);
-            return ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR);
+            return ApiResponse.error(UserErrorCode.USER_PROFILE_DELETE_FAILED);
         }
     }
 } 

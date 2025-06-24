@@ -46,9 +46,9 @@ public class ApiResponse<T> {
     // ===== 성공 응답 팩토리 메서드들 =====
 
     /**
-     * 성공 응답 생성 (데이터 포함)
+     * 도메인별 성공 응답 생성 (데이터 포함)
      */
-    public static <T> ApiResponse<T> success(T data, SuccessCode successCode) {
+    public static <T, S extends SuccessCode> ApiResponse<T> success(T data, S successCode) {
         return new ApiResponse<>(
                 true,
                 successCode.getCode(),
@@ -60,9 +60,9 @@ public class ApiResponse<T> {
     }
 
     /**
-     * 성공 응답 생성 (데이터 없음)
+     * 도메인별 성공 응답 생성 (데이터 없음)
      */
-    public static <T> ApiResponse<T> success(SuccessCode successCode) {
+    public static <T, S extends SuccessCode> ApiResponse<T> success(S successCode) {
         return new ApiResponse<>(
                 true,
                 successCode.getCode(),
@@ -76,9 +76,9 @@ public class ApiResponse<T> {
     // ===== 실패 응답 팩토리 메서드들 =====
 
     /**
-     * 에러 응답 생성
+     * 도메인별 에러 응답 생성
      */
-    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+    public static <T, E extends ErrorCode> ApiResponse<T> error(E errorCode) {
         return new ApiResponse<>(
                 false,
                 errorCode.getCode(),
@@ -90,9 +90,9 @@ public class ApiResponse<T> {
     }
 
     /**
-     * 커스텀 에러 응답 생성
+     * 도메인별 커스텀 에러 응답 생성
      */
-    public static <T> ApiResponse<T> error(ErrorCode errorCode, String customMessage) {
+    public static <T, E extends ErrorCode> ApiResponse<T> error(E errorCode, String customMessage) {
         return new ApiResponse<>(
                 false,
                 errorCode.getCode(),
