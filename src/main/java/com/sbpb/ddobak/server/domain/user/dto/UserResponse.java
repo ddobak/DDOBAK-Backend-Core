@@ -17,13 +17,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserResponse {
 
-    private String id;
+    private Long id;
     private String email;
     private String name;
-    private String nickname;
+    private User.UserStatus status;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;
-    private Boolean isDeleted;
 
     /**
      * User 엔티티를 UserResponse로 변환
@@ -33,10 +33,10 @@ public class UserResponse {
             .id(user.getId())
             .email(user.getEmail())
             .name(user.getName())
-            .nickname(user.getNickname())
+            .status(user.getStatus())
             .createdAt(user.getCreatedAt())
+            .updatedAt(user.getUpdatedAt())
             .lastLoginAt(user.getLastLoginAt())
-            .isDeleted(user.getIsDeleted())
             .build();
     }
 } 

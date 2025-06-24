@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.sbpb.ddobak.server.common.exception.ErrorCode;
+
 /**
  * API 공통 응답 형식
  */
@@ -46,12 +48,12 @@ public class ApiResponse<T> {
     /**
      * 성공 응답 생성 (데이터 포함)
      */
-    public static <T> ApiResponse<T> success(T data, ResponseCode responseCode) {
+    public static <T> ApiResponse<T> success(T data, SuccessCode successCode) {
         return new ApiResponse<>(
                 true,
-                responseCode.getCode(),
-                responseCode.getMessage(),
-                responseCode.getUserMessage(),
+                successCode.getCode(),
+                successCode.getMessage(),
+                successCode.getMessage(),
                 data,
                 LocalDateTime.now(),
                 generateTraceId());
@@ -60,12 +62,12 @@ public class ApiResponse<T> {
     /**
      * 성공 응답 생성 (데이터 없음)
      */
-    public static <T> ApiResponse<T> success(ResponseCode responseCode) {
+    public static <T> ApiResponse<T> success(SuccessCode successCode) {
         return new ApiResponse<>(
                 true,
-                responseCode.getCode(),
-                responseCode.getMessage(),
-                responseCode.getUserMessage(),
+                successCode.getCode(),
+                successCode.getMessage(),
+                successCode.getMessage(),
                 null,
                 LocalDateTime.now(),
                 generateTraceId());
@@ -76,12 +78,12 @@ public class ApiResponse<T> {
     /**
      * 에러 응답 생성
      */
-    public static <T> ApiResponse<T> error(ResponseCode responseCode) {
+    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
         return new ApiResponse<>(
                 false,
-                responseCode.getCode(),
-                responseCode.getMessage(),
-                responseCode.getUserMessage(),
+                errorCode.getCode(),
+                errorCode.getMessage(),
+                errorCode.getMessage(),
                 null,
                 LocalDateTime.now(),
                 generateTraceId());
@@ -90,12 +92,12 @@ public class ApiResponse<T> {
     /**
      * 커스텀 에러 응답 생성
      */
-    public static <T> ApiResponse<T> error(ResponseCode responseCode, String customMessage) {
+    public static <T> ApiResponse<T> error(ErrorCode errorCode, String customMessage) {
         return new ApiResponse<>(
                 false,
-                responseCode.getCode(),
+                errorCode.getCode(),
                 customMessage,
-                responseCode.getUserMessage(),
+                errorCode.getMessage(),
                 null,
                 LocalDateTime.now(),
                 generateTraceId());

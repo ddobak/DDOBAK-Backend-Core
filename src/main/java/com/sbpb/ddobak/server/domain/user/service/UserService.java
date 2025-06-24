@@ -63,12 +63,12 @@ public class UserService {
 
         return UserProfileResponse.builder()
                 .userId(user.getId())
-                .name(user.getName())
                 .email(user.getEmail())
-                .status(user.getStatus().name())
-                .createdAt(user.getCreatedAt().format(DATE_FORMATTER))
-                .lastLoginAt(user.getLastLoginAt() != null ? 
-                        user.getLastLoginAt().format(DATE_FORMATTER) : null)
+                .name(user.getName())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .lastLoginAt(user.getLastLoginAt())
                 .build();
     }
 
@@ -101,12 +101,12 @@ public class UserService {
 
         return UserProfileResponse.builder()
                 .userId(savedUser.getId())
-                .name(savedUser.getName())
                 .email(savedUser.getEmail())
-                .status(savedUser.getStatus().name())
-                .createdAt(savedUser.getCreatedAt().format(DATE_FORMATTER))
-                .lastLoginAt(savedUser.getLastLoginAt() != null ? 
-                        savedUser.getLastLoginAt().format(DATE_FORMATTER) : null)
+                .name(savedUser.getName())
+                .status(savedUser.getStatus())
+                .createdAt(savedUser.getCreatedAt())
+                .updatedAt(savedUser.getUpdatedAt())
+                .lastLoginAt(savedUser.getLastLoginAt())
                 .build();
     }
 
