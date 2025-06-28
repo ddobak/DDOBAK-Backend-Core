@@ -1,8 +1,14 @@
 package com.sbpb.ddobak.server.domain.documentProcess.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sbpb.ddobak.server.domain.documentProcess.dto.*;
-import com.sbpb.ddobak.server.domain.documentProcess.service.application.DocumentProcessApplicationService;
+import com.sbpb.ddobak.server.domain.documentProcess.dto.analysis.AnalysisRequest;
+import com.sbpb.ddobak.server.domain.documentProcess.dto.analysis.AnalysisResponse;
+import com.sbpb.ddobak.server.domain.documentProcess.dto.analysis.AnalysisResultResponse;
+import com.sbpb.ddobak.server.domain.documentProcess.dto.ocr.OcrContentResponse;
+import com.sbpb.ddobak.server.domain.documentProcess.dto.ocr.OcrRequest;
+import com.sbpb.ddobak.server.domain.documentProcess.dto.ocr.OcrResponse;
+import com.sbpb.ddobak.server.domain.documentProcess.dto.ocr.OcrUpdateRequest;
+import com.sbpb.ddobak.server.domain.documentProcess.service.DocumentProcessService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,14 +33,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * ContractController 테스트
  */
 @WebMvcTest(ContractController.class)
-@DisplayName("문서 처리 Controller 테스트")
+@DisplayName("계약서 Controller 테스트")
 class ContractControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private DocumentProcessApplicationService documentProcessApplicationService;
+    private DocumentProcessService documentProcessService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -54,165 +60,111 @@ class ContractControllerTest {
     @DisplayName("OCR 처리 API 성공")
     void processOcr_Success() throws Exception {
         // given
-        OcrResponse ocrResponse = OcrResponse.builder()
-                .contractId(contractId)
-                .ocrResults(List.of(
-                    OcrResponse.OcrResult.builder()
-                            .ocrContentId("OCR001")
-                            .pageIndex(0)
-                            .htmlContent("<html>Content 1</html>")
-                            .build(),
-                    OcrResponse.OcrResult.builder()
-                            .ocrContentId("OCR002")
-                            .pageIndex(1)
-                            .htmlContent("<html>Content 2</html>")
-                            .build()
-                ))
-                .build();
+        OcrResponse ocrResponse = new OcrResponse(contractId, "success");
 
-        given(documentProcessApplicationService.processOcr(anyString(), any(), anyString()))
+        given(documentProcessService.processOcr(anyString(), any(OcrRequest.class)))
                 .willReturn(ocrResponse);
 
         // when & then
-        mockMvc.perform(multipart("/api/v1/documents/ocr")
+        mockMvc.perform(multipart("/contract/ocr")
                 .file(testFile1)
                 .file(testFile2)
-                .param("contractType", "employment"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.contractId").value(contractId))
-                .andExpect(jsonPath("$.data.ocrResults").isArray())
-                .andExpect(jsonPath("$.data.ocrResults.length()").value(2));
-
-        verify(documentProcessApplicationService).processOcr(anyString(), any(), anyString());
-    }
-
-    @Test
-    @DisplayName("OCR 컨텐츠 수정 API 성공")
-    void updateOcrContent_Success() throws Exception {
-        // given
-        OcrContentUpdateRequest request = OcrContentUpdateRequest.builder()
-                .pageIndex(0)
-                .content("<html>Updated Content</html>")
-                .build();
-
-        // when & then
-        mockMvc.perform(put("/api/v1/documents/{contractId}/ocr", contractId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
-
-        verify(documentProcessApplicationService).updateOcrContent(any(OcrContentUpdateRequest.class));
-    }
-
-    @Test
-    @DisplayName("분석 요청 API 성공")
-    void requestAnalysis_Success() throws Exception {
-        // given
-        AnalysisResponse analysisResponse = AnalysisResponse.builder()
-                .contractId(contractId)
-                .analysisId("ANALYSIS001")
-                .status("REQUESTED")
-                .message("Analysis request submitted successfully")
-                .build();
-
-        given(documentProcessApplicationService.requestAnalysis(any(AnalysisRequest.class)))
-                .willReturn(analysisResponse);
-
-        // when & then
-        mockMvc.perform(post("/api/v1/documents/{contractId}/analysis", contractId))
-                .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.contractId").value(contractId))
-                .andExpect(jsonPath("$.data.status").value("REQUESTED"));
-
-        verify(documentProcessApplicationService).requestAnalysis(any(AnalysisRequest.class));
-    }
-
-    @Test
-    @DisplayName("분석 결과 조회 API 성공")
-    void getAnalysisResult_Success() throws Exception {
-        // given
-        AnalysisResponse analysisResponse = AnalysisResponse.builder()
-                .contractId(contractId)
-                .analysisId("ANALYSIS001")
-                .status("COMPLETED")
-                .message("Analysis completed successfully")
-                .build();
-
-        given(documentProcessApplicationService.getAnalysisResult(contractId))
-                .willReturn(analysisResponse);
-
-        // when & then
-        mockMvc.perform(get("/api/v1/documents/{contractId}/analysis", contractId))
+                .param("contractType", "employment")
+                .header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.contractId").value(contractId))
-                .andExpect(jsonPath("$.data.status").value("COMPLETED"));
+                .andExpect(jsonPath("$.data.ocrStatus").value("success"));
 
-        verify(documentProcessApplicationService).getAnalysisResult(contractId);
+        verify(documentProcessService).processOcr(anyString(), any(OcrRequest.class));
     }
 
     @Test
     @DisplayName("OCR 결과 조회 API 성공")
     void getOcrResults_Success() throws Exception {
         // given
-        List<OcrResponse.OcrResult> ocrResults = List.of(
-            OcrResponse.OcrResult.builder()
-                    .ocrContentId("OCR001")
-                    .pageIndex(0)
-                    .htmlContent("<html>Content 1</html>")
-                    .build(),
-            OcrResponse.OcrResult.builder()
-                    .ocrContentId("OCR002")
-                    .pageIndex(1)
-                    .htmlContent("<html>Content 2</html>")
-                    .build()
+        List<OcrContentResponse.HtmlElement> htmlArray = List.of(
+            new OcrContentResponse.HtmlElement("content", "<div>테스트 내용 1</div>", 1001),
+            new OcrContentResponse.HtmlElement("content", "<div>테스트 내용 2</div>", 1002)
         );
+        OcrContentResponse response = new OcrContentResponse(2, "<div>테스트 내용 1</div><div>테스트 내용 2</div>", htmlArray);
 
-        given(documentProcessApplicationService.getOcrResults(contractId))
-                .willReturn(ocrResults);
+        given(documentProcessService.getOcrResults(contractId))
+                .willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/v1/documents/{contractId}/ocr", contractId))
+        mockMvc.perform(get("/contract/ocr/{contractId}", contractId)
+                .header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(2));
+                .andExpect(jsonPath("$.data.pageIdx").value(2))
+                .andExpect(jsonPath("$.data.htmlArray").isArray());
 
-        verify(documentProcessApplicationService).getOcrResults(contractId);
+        verify(documentProcessService).getOcrResults(contractId);
     }
 
     @Test
-    @DisplayName("처리 상태 조회 API 성공")
-    void getProcessStatus_Success() throws Exception {
+    @DisplayName("OCR 내용 수정 API 성공")
+    void updateOcrContent_Success() throws Exception {
         // given
-        DocumentProcessStatusResponse statusResponse = DocumentProcessStatusResponse.builder()
-                .contractId(contractId)
-                .ocrStatus("COMPLETED")
-                .analysisStatus("COMPLETED")
-                .processStatus("COMPLETED")
-                .overallStatus("ALL_COMPLETED")
-                .totalPages(2)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .statusMessage("All processing completed successfully")
-                .build();
-
-        given(documentProcessApplicationService.getProcessStatus(contractId))
-                .willReturn(statusResponse);
+        OcrUpdateRequest request = new OcrUpdateRequest("OCR001", "<div>수정된 내용</div>");
 
         // when & then
-        mockMvc.perform(get("/api/v1/documents/{contractId}/status", contractId))
+        mockMvc.perform(patch("/contract/ocr/{contractId}", contractId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+                .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        verify(documentProcessService).updateOcrContent(contractId, request);
+    }
+
+    @Test
+    @DisplayName("분석 요청 API 성공")
+    void requestAnalysis_Success() throws Exception {
+        // given
+        AnalysisRequest request = new AnalysisRequest(contractId, true);
+        AnalysisResponse response = new AnalysisResponse("ANALYSIS001");
+
+        given(documentProcessService.requestAnalysis(request))
+                .willReturn(response);
+
+        // when & then
+        mockMvc.perform(post("/contract/analysis")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+                .header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.contractId").value(contractId))
-                .andExpect(jsonPath("$.data.ocrStatus").value("COMPLETED"))
-                .andExpect(jsonPath("$.data.analysisStatus").value("COMPLETED"))
-                .andExpect(jsonPath("$.data.processStatus").value("COMPLETED"))
-                .andExpect(jsonPath("$.data.overallStatus").value("ALL_COMPLETED"));
+                .andExpect(jsonPath("$.data.analysisId").value("ANALYSIS001"));
 
-        verify(documentProcessApplicationService).getProcessStatus(contractId);
+        verify(documentProcessService).requestAnalysis(request);
+    }
+
+    @Test
+    @DisplayName("분석 결과 조회 API 성공")
+    void getAnalysisResult_Success() throws Exception {
+        // given
+        AnalysisResultResponse response = new AnalysisResultResponse();
+        response.setOriginContent("원본 계약서 내용");
+        response.setSummary("계약서 요약");
+        response.setAnalysisStatus("success");
+        response.setAnalysisDate(LocalDateTime.now());
+        response.setToxicCount(2);
+
+        given(documentProcessService.getAnalysisResult(contractId, "ANALYSIS001"))
+                .willReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/contract/{contractId}/analysis/{analysisId}", contractId, "ANALYSIS001")
+                .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.originContent").value("원본 계약서 내용"))
+                .andExpect(jsonPath("$.data.summary").value("계약서 요약"))
+                .andExpect(jsonPath("$.data.toxicCount").value(2));
+
+        verify(documentProcessService).getAnalysisResult(contractId, "ANALYSIS001");
     }
 } 
