@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sbpb.ddobak.server.common.exception.ErrorCode;
 import com.sbpb.ddobak.server.common.utils.IdGenerator;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 모든 API 응답에 사용되는 통일된 응답 형식
@@ -19,6 +21,8 @@ import com.sbpb.ddobak.server.common.utils.IdGenerator;
  * - null 값 제외 (Jackson)
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Getter
+@Setter
 public class ApiResponse<T> {
 
     @JsonProperty("success")
@@ -158,57 +162,7 @@ public class ApiResponse<T> {
         return IdGenerator.generateTraceId();
     }
 
-    // ===== Getter 메서드들 =====
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public String getTraceId() {
-        return traceId;
-    }
-
-    // ===== Setter 메서드들 (Jackson 역직렬화용) =====
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public void setTraceId(String traceId) {
-        this.traceId = traceId;
-    }
+    // ===== Getter/Setter 메서드들은 Lombok으로 자동 생성됨 =====
 
     /**
      * 디버깅용 toString 메서드
