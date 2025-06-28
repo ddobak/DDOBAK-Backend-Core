@@ -1,0 +1,104 @@
+---
+description: When it’s necessary to refer to the work specification or requirements, such as the PRD
+globs: 
+alwaysApply: false
+---
+# 계약서 독소조항 분석 iOS 애플리케이션 서버 PRD *(Java 17 & Spring Boot 3.5.0)*
+
+---
+
+## 목차
+1. [제품 상세 설명](mdc:#제품-상세-설명)
+2. S 설정기능 및 및 시나리오
+5. @참고 서비스 및 근거
+
+---
+
+## 제품 상세 설명
+본 서비스는 iOS 사용자를 대상으로 **계약서(임대차·근로·렌터카 등) 독소조항을 자동 식별·분석**하는 솔루션이다. 백엔드는 **Java 17**과 **Spring Boot 3.5.0**으로 구축되며, AWS Lambda·S3 등을 이용해 서버리스 방식으로 동작한다.
+
+사용 흐름:
+1. 사용자가 사진·스캔본을 다중 업로드한다.
+2. 서버가 OCR Lambda에 각 이미지를 병렬로 요청해 HTML 단위 콘텐츠를 얻는다.
+3. 서버는 OCR 결과를 저장하고 분석 Lambda를 비동기로 호출한다.
+4. 분석 완료 후 사용자는 웹뷰를 통해 결과를 확인한다.
+
+---
+
+## 시스템 구성 및 AWS 설정 원칙
+- **환경 파일**: `.env`, `application.yml` 두 곳에 S3 버킷(service-bucket, test-bucket)과 Lambda 이름(ocr-lambda, analysis-lambda)을 정의한다.
+- **중앙 설정 클래스(AwsConfig)**
+  - 모든 AWS 관련 설정값을 한곳에서 주입받아 관리한다.
+  - AWS SDK 클라이언트(S3, Lambda)는 **`ddobak` 프로필**을 기본으로 사용한다.
+- **유틸 클래스**
+  1. **S3Util**
+     - `upload`, `download`, `delete`, `generatePresignedUrl`, `getObject` 등 메서드 제공
+     - 파라미터: `bucket`, `key`, 추가 옵션
+  2. **LambdaUtil**
+     - `listFunctions()`, `invokeAsync(lambdaName, payload)`, `invokeAndWait(lambdaName, payload)`
+- 인증·인가, CI/CD, 로그 트레이싱, Step Functions 등은 MVP 범위에서 제외한다.
+
+---
+
+## 핵심 기능 및 명세
+### 1. OCR 요청
+| 항목 | 상세 |
+|---|---|
+| Method / Path | `POST /contract/ocr` |
+| 설명 | 다중 이미지 업로드 후, 각 이미지를 **병렬**로 `ocr-lambda`에 호출한다. 결과 순서는 원본 순서와 동일해야 한다. |
+| 헤더 | Authorization(Bearer JWT) ✅ / Content-Type(multipart/form-data) ✅ / X-Request-Id(옵션) |
+| Request DTO | `files: List<MultipartFile>` ✅, `contractType: string` ✅ |
+| Response DTO | `contractId: string`, `ocrStatus: string(success/fail)` |
+| 비고 | 최대 20 MB, S3 Presigned URL 활용 |
+
+### 2. OCR 결과 조회 (웹뷰)
+| 항목 | 상세 |
+|---|---|
+| Method / Path | `GET /contract/ocr/{contractId}` |
+| Response 구조 | `pageIdx, htmlEntire, htmlArray[{category, element, id}]` |
+
+### 3. OCR 수정
+| 항목 | 상세 |
+|---|---|
+| Method / Path | `PATCH /contract/ocr/{contractId}` |
+| Request DTO | `id: int`, `element: string` |
+
+### 4. 분석 요청
+| 항목 | 상세 |
+|---|---|
+| Method / Path | `POST /contract/analysis` |
+| 설명 | `analysis-lambda` 단일 호출(비동기). 완료 시 상태값을 DB 업데이트만 수행한다. |
+| Request DTO | `contractId: string`, `ocrSucceeded: boolean` |
+| Response DTO | `analysisId: string` |
+
+### 5. 분석 결과 조회 (웹뷰)
+| 항목 | 상세 |
+|---|---|
+| Method / Path | `GET /contract/{contractId}/analysis/{analysisId}` |
+| Response DTO | `originContent, summary, analysisStatus, analysisDate, toxicCount, ddobakCommentary{overallComment, warningComment, advice}, toxics[{title, clause, reason, reasonReference, warnLevel}]` |
+
+---
+
+## 사용자 페르소나 및 시나리오
+| 페르소나 | 특성 | 주요 시나리오 |
+|---|---|---|
+| 김렌트(35세, 스타트업 운영) | 렌터카 서비스 다수 이용, 모바일 선호 | 1) 차량 대여 전 약관 촬영 → 위험 조항 확인 → 계약 확정 |
+| 이세입(29세, 사회초년생) | 전·월세 첫 경험, 법률 지식 부족 | 1) 임대차계약서 PDF 업로드 → 독소조항 2건 검출 → 집주인과 조정 |
+| 박직장(41세, 인사담당) | 근로계약 검토 책임 | 1) 표준 근로계약서 OCR → 이상 無 확인 → 사내 저장 <br>2) 프리랜서 계약서 OCR → '일방적 해지' 위험 경고 수신 |
+
+---
+
+## 참고 서비스 및 근거
+| 서비스 | 주요 기능 | 우리 서비스에 주는 인사이트 | 근거·링크 |
+|---|---|---|---|
+| Adobe Acrobat OCR | 이미지·PDF OCR 정확도, 다국어 지원 | OCR 정확도 향상 전략, 멀티페이지 처리 UX | <https://acrobat.adobe.com/> |
+| DocuSign | 전자서명·계약 관리 | 계약 프로세스 통합 가치, 사용자 신뢰 확보 | <https://www.docusign.com/> |
+| Blue Pencil | 계약서 위험 조항 분석(영문) | 위험 레벨 시각화, 조항별 코멘트 UI | <https://www.bluepencil.io/> |
+| LawGo(로톡) | 국내 법률 상담 플랫폼 | 한국 법령 기반 추천·상담 연결 가능성 | <https://lawtalk.co.kr/> |
+| Google Cloud Vision | 서버리스 OCR API | AWS 대비 비용·정확도 비교 벤치마킹 | <https://cloud.google.com/vision> |
+
+> 위 사례들은 OCR 품질·법률 콘텐츠·UX 측면에서 참고 가치가 높으며, 국내외 규제와 사용자 기대치를 파악하는 데 도움을 준다.
+
+---
+
+> **비고**: 데이터 모델 상세 설계 및 보안 정책은 별도 문서(`contract_erd.mdc` 등)에서 관리한다.

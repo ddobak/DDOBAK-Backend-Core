@@ -1,0 +1,65 @@
+---
+description: When it’s necessary to refer to the schema related to the contract
+globs: 
+alwaysApply: false
+---
+# 계약 서비스 ERD
+
+## 테이블 정의
+
+### contracts  🟠 (file-text)
+| 컬럼 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | string | PK | 계약 ID |
+| user_id | string |  | 사용자 ID |
+| img_s3_key | string |  | 이미지가 위치한 S3 Key (디렉터리 경로까지만) |
+| created_at | timestamp |  | 생성 일시 |
+| updated_at | timestamp |  | 수정 일시 |
+
+---
+
+### ocr_contents
+| 컬럼 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | string | PK | OCR Content ID |
+| contract_id | string | FK → contracts.id | 연관 계약 ID |
+| content | string |  | OCR 변환 HTML 또는 텍스트 |
+| tag_idx | int |  | 원본 페이지/태그 식별 번호 |
+
+---
+
+### contract_analyses  🟣 (search)
+| 컬럼 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | string | PK | 분석 ID |
+| contract_id | string | FK → contracts.id | 연관 계약 ID |
+| summary | text |  | 계약 요약문 |
+| status | text |  | 분석 상태 (success / fail / …) |
+| ddobak_overall_comment | string |  | 또박이 한마디 |
+| ddobak_warning_comment | string |  | 주의 사항 요약 |
+| ddobak_advice | string |  | 또박이의 조언 |
+| process_status | enum |  | 프로세스 진행 상태 |
+| created_at | timestamp |  | 생성 일시 |
+| updated_at | timestamp |  | 수정 일시 |
+
+---
+
+### toxic_clauses 🔴 (alert-triangle)
+| 컬럼 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | string | PK | 독소 조항 ID |
+| analysis_id | string | FK → contract_analyses.id | 연관 분석 ID |
+| clause | text |  | 독소 조항 문장 |
+| reason | text |  | 독소로 판단한 이유 |
+| reason_reference | text |  | 법적 근거 |
+| source_contract_tag_idx | int |  | 원본 OCR 태그 번호 |
+| warn_level | int |  | 위험 레벨 (1~5) |
+
+---
+
+## 테이블 관계
+- contracts **1 : N** ocr_contents (`contracts.id` → `ocr_contents.contract_id`)
+- contracts **1 : N** contract_analyses (`contracts.id` → `contract_analyses.contract_id`)
+- contract_analyses **1 : N** toxic_clauses (`contract_analyses.id` → `toxic_clauses.analysis_id`)
+
+> 이 ERD는 `contracts` 테이블을 중심으로 OCR 결과와 분석 결과를 계층적으로 관리하도록 설계되었다.
