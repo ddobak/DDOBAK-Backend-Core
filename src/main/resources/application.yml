@@ -6,6 +6,12 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
 
+# 로깅 설정
+logging:
+  level:
+    com.sbpb.ddobak.server.common.utils.LambdaUtil: DEBUG
+    com.sbpb.ddobak.server.domain.documentProcess.service.DocumentProcessService: DEBUG
+
 # AWS 설정
 aws:
   region: ap-northeast-2
@@ -14,6 +20,7 @@ aws:
     test-bucket: ddobak-test  # 테스트용 버킷
     service-bucket: ${SERVICE_BUCKET:ddobak-test}  # 서비스용 버킷
   lambda:
-    ocr-function-name: ocr_lambda
+    ocr-function-name: test_ocr
+    analysis-function-name: test_bedrock
   step-functions:
     contract-analysis-state-machine-arn: ${ANALYSIS_STEP_FUNCTIONS_ARN:arn_for_step_functions}
