@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 /**
  * OcrServiceImpl 단위 테스트
@@ -107,8 +108,8 @@ class OcrServiceImplTest {
         assertThat(result.getOcrResults().get(1).getPageIndex()).isEqualTo(1);
 
         verify(contractRepository).save(any(Contract.class));
-        verify(ocrContentRepository).save(any(OcrContent.class));
-        verify(externalOcrService).processOcrForFile(any(), anyString(), any());
+        verify(ocrContentRepository, times(2)).save(any(OcrContent.class)); // 2개 파일이므로 2번 호출
+        verify(externalOcrService, times(2)).processOcrForFile(any(), anyString(), any()); // 2개 파일이므로 2번 호출
     }
 
     @Test

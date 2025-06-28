@@ -3,6 +3,7 @@ package com.sbpb.ddobak.server.domain.documentProcess.service.application.impl;
 import com.sbpb.ddobak.server.domain.documentProcess.dto.*;
 import com.sbpb.ddobak.server.domain.documentProcess.entity.Contract;
 import com.sbpb.ddobak.server.domain.documentProcess.entity.ContractAnalysis;
+import com.sbpb.ddobak.server.domain.documentProcess.entity.ProcessStatus;
 import com.sbpb.ddobak.server.domain.documentProcess.repository.ContractAnalysisRepository;
 import com.sbpb.ddobak.server.domain.documentProcess.repository.ContractRepository;
 import com.sbpb.ddobak.server.domain.documentProcess.repository.OcrContentRepository;
@@ -29,7 +30,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 /**
- * DocumentProcessApplicationServiceImpl 통합 테스트
+ * DocumentProcessApplicationServiceImpl 테스트
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("문서 처리 Application Service 테스트")
@@ -69,8 +70,8 @@ class DocumentProcessApplicationServiceImplTest {
     }
 
     @Test
-    @DisplayName("전체 문서 처리 플로우 성공 (OCR + 자동 분석 요청)")
-    void processDocumentComplete_Success() {
+    @DisplayName("OCR 처리 성공")
+    void processOcr_Success() {
         // given
         String contractId = "CONTRACT001";
         
@@ -90,58 +91,15 @@ class DocumentProcessApplicationServiceImplTest {
                 ))
                 .build();
 
-        AnalysisResponse analysisResponse = AnalysisResponse.builder()
-                .contractId(contractId)
-                .analysisId("ANALYSIS001")
-                .status("REQUESTED")
-                .message("Analysis request submitted successfully")
-                .build();
-
         given(ocrService.processMultipleFiles(userId, testFiles, contractType)).willReturn(ocrResponse);
-        given(analysisService.requestAnalysis(contractId)).willReturn(analysisResponse);
 
         // when
-        DocumentProcessResponse result = documentProcessApplicationService
-                .processDocumentComplete(userId, testFiles, contractType);
+        OcrResponse result = documentProcessApplicationService.processOcr(userId, testFiles, contractType);
 
         // then
         assertThat(result).isNotNull();
         assertThat(result.getContractId()).isEqualTo(contractId);
         assertThat(result.getOcrResults()).hasSize(2);
-        assertThat(result.getAnalysisInfo()).isNotNull();
-        assertThat(result.getAnalysisInfo().getStatus()).isEqualTo("REQUESTED");
-        assertThat(result.getProcessingStatus()).isEqualTo("OCR_COMPLETED_ANALYSIS_REQUESTED");
-
-        verify(ocrService).processMultipleFiles(userId, testFiles, contractType);
-        verify(analysisService).requestAnalysis(contractId);
-    }
-
-    @Test
-    @DisplayName("OCR만 처리 성공")
-    void processOcrOnly_Success() {
-        // given
-        String contractId = "CONTRACT001";
-        
-        OcrResponse ocrResponse = OcrResponse.builder()
-                .contractId(contractId)
-                .ocrResults(List.of(
-                    OcrResponse.OcrResult.builder()
-                            .ocrContentId("OCR001")
-                            .pageIndex(0)
-                            .htmlContent("<html>Content 1</html>")
-                            .build()
-                ))
-                .build();
-
-        given(ocrService.processMultipleFiles(userId, testFiles, contractType)).willReturn(ocrResponse);
-
-        // when
-        OcrResponse result = documentProcessApplicationService.processOcrOnly(userId, testFiles, contractType);
-
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result.getContractId()).isEqualTo(contractId);
-        assertThat(result.getOcrResults()).hasSize(1);
 
         verify(ocrService).processMultipleFiles(userId, testFiles, contractType);
     }
@@ -193,6 +151,31 @@ class DocumentProcessApplicationServiceImplTest {
     }
 
     @Test
+    @DisplayName("분석 결과 조회 성공")
+    void getAnalysisResult_Success() {
+        // given
+        String contractId = "CONTRACT001";
+        AnalysisResponse expectedResponse = AnalysisResponse.builder()
+                .contractId(contractId)
+                .analysisId("ANALYSIS001")
+                .status("COMPLETED")
+                .message("Analysis completed successfully")
+                .build();
+
+        given(analysisService.getAnalysisResult(contractId)).willReturn(expectedResponse);
+
+        // when
+        AnalysisResponse result = documentProcessApplicationService.getAnalysisResult(contractId);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContractId()).isEqualTo(contractId);
+        assertThat(result.getStatus()).isEqualTo("COMPLETED");
+
+        verify(analysisService).getAnalysisResult(contractId);
+    }
+
+    @Test
     @DisplayName("처리 상태 조회 성공")
     void getProcessStatus_Success() {
         // given
@@ -211,6 +194,7 @@ class DocumentProcessApplicationServiceImplTest {
                 .id("ANALYSIS001")
                 .contractId(contractId)
                 .summary("Analysis completed")
+                .processStatus(ProcessStatus.COMPLETED)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
