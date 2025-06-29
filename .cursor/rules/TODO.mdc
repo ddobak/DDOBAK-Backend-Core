@@ -27,6 +27,7 @@ alwaysApply: false
 ## 3️⃣ 도메인 모델 & 레포지토리
 - [x] `contracts`, `ocr_contents`, `contract_analyses`, `toxic_clauses` 엔티티 생성
 - [x] 각 엔티티에 대한 Spring Data JPA 리포지토리 작성
+- [ ] PostgreSQL용 엔티티 어노테이션 최적화 및 인덱스 설정
 
 ## 4️⃣ API 구현
 - [x] `POST /contract/ocr`
@@ -44,13 +45,26 @@ alwaysApply: false
 ## 5️⃣ 테스트
 - [x] 유틸 단위 테스트 (S3Util, LambdaUtil) - ✅ 기본 테스트 프레임워크 구성
 - [x] API 통합 테스트 (MockMultipartFile 등 활용) - ✅ ContractController 테스트 구현
+- [ ] PostgreSQL 연동 후 통합 테스트 검증
 
 ## 6️⃣ 문서화 & Lambda 스키마
 - [x] Lambda 입출력 스키마 정의 및 Cursor Rule 생성
 - [x] Lambda 호출 코드를 새로운 스키마에 맞게 수정
 - [x] Debug 레벨 Lambda 요청/응답 로깅 추가
+- [x] README.md 프로젝트 구조 및 PostgreSQL 연동 정보 업데이트
 - [ ] Swagger / SpringDoc 설정
 - [ ] PRD·ERD 문서 링크 업데이트
+
+## 7️⃣ PostgreSQL 연동 및 설정
+- [x] `build.gradle` PostgreSQL 드라이버 의존성 추가
+- [x] `.env` 파일에 PostgreSQL 연결 정보 추가
+- [x] `application.yml` PostgreSQL 프로파일 설정 (dev/prod 분리)
+- [x] `application-test.yml` H2 테스트 환경 설정 완료
+- [x] H2 테스트 환경으로 애플리케이션 구동 확인 (정상 동작)
+- [x] 프로파일 기반 데이터베이스 선택 기능 구현
+- [ ] PostgreSQL 실제 연결 테스트 및 검증 (PostgreSQL 서버 준비 후)
+- [ ] 기존 API 기능 PostgreSQL 환경에서 검증  
+- [ ] Connection Pool 최적화 및 성능 튜닝
 
 ---
 
@@ -73,6 +87,9 @@ alwaysApply: false
 - **서버리스 통합**: AWS Lambda/S3 비동기 처리
 - **병렬 처리**: CompletableFuture 기반 다중 이미지 OCR
 - **타입 안전성**: Generic 기반 API 응답 구조
+
+### 🗄️ **데이터베이스 (진행 중)**
+- **PostgreSQL 연동**: H2에서 PostgreSQL로 전환 작업 진행
 
 > **참고**: 인증·인가, 로그 트레이싱, CI/CD, Step Functions는 현재 범위에서 제외됨
 
