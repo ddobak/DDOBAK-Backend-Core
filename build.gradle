@@ -52,7 +52,7 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 	
 	// Database
-	runtimeOnly 'org.postgresql:postgresql' // PostgreSQL 드라이버
+	implementation 'org.postgresql:postgresql' // PostgreSQL 드라이버
 	runtimeOnly 'com.h2database:h2' // H2 인메모리 DB (테스트 프로파일용)
 	
 	// Test
