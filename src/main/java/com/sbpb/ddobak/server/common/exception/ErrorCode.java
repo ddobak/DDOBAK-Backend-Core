@@ -2,9 +2,6 @@ package com.sbpb.ddobak.server.common.exception;
 
 import org.springframework.http.HttpStatus;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 /**
  * 공통 시스템 에러 코드 정의 (5xxx 범위)
  * 
@@ -25,68 +22,34 @@ import lombok.RequiredArgsConstructor;
  * - 5200-5299: 데이터베이스 에러
  * - 5300-5399: 외부 서비스 에러
  */
-@Getter
-@RequiredArgsConstructor
-public enum ErrorCode {
-
-    // ===== 5100-5199: 일반적인 시스템 에러 =====
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5100, "Internal server error occurred"),
-    SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, 5101, "Service temporarily unavailable"),
-    CONFIGURATION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5102, "Configuration error"),
-    INITIALIZATION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5103, "Initialization error"),
-    PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5104, "Processing error occurred"),
-    INVALID_INPUT(HttpStatus.BAD_REQUEST, 5110, "Invalid input provided"),
-    INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, 5111, "Invalid type value"),
-    MISSING_INPUT_VALUE(HttpStatus.BAD_REQUEST, 5112, "Required input value is missing"),
-    INVALID_JSON_FORMAT(HttpStatus.BAD_REQUEST, 5113, "Invalid JSON format"),
-    INVALID_PARAMETER_FORMAT(HttpStatus.BAD_REQUEST, 5114, "Invalid parameter format"),
-    INVALID_HEADER_VALUE(HttpStatus.BAD_REQUEST, 5115, "Invalid header value"),
-    INVALID_QUERY_PARAMETER(HttpStatus.BAD_REQUEST, 5116, "Invalid query parameter"),
-    REQUEST_BODY_MISSING(HttpStatus.BAD_REQUEST, 5117, "Request body is missing"),
-    INVALID_CONTENT_TYPE(HttpStatus.BAD_REQUEST, 5118, "Invalid content type"),
-    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, 5119, "HTTP method not allowed"),
-    
-    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, 5150, "Resource not found"),
-    ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, 5151, "Entity not found"),
-    DUPLICATE_RESOURCE(HttpStatus.CONFLICT, 5160, "Resource already exists"),
-    DUPLICATE_KEY_VALUE(HttpStatus.CONFLICT, 5161, "Duplicate key value"),
-    RESOURCE_ALREADY_EXISTS(HttpStatus.CONFLICT, 5162, "Resource already exists"),
-    VERSION_CONFLICT(HttpStatus.CONFLICT, 5170, "Version conflict detected"),
-    OPTIMISTIC_LOCK_FAILURE(HttpStatus.CONFLICT, 5171, "Optimistic lock failure"),
-
-    // ===== 5200-5299: 데이터베이스 에러 =====
-    DATABASE_CONNECTION_ERROR(HttpStatus.SERVICE_UNAVAILABLE, 5200, "Database connection error"),
-    DATABASE_TIMEOUT(HttpStatus.REQUEST_TIMEOUT, 5201, "Database operation timeout"),
-    TRANSACTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 5202, "Transaction failed"),
-    CONSTRAINT_VIOLATION(HttpStatus.CONFLICT, 5203, "Database constraint violation"),
-    DATA_INTEGRITY_VIOLATION(HttpStatus.CONFLICT, 5204, "Data integrity violation"),
-    SQL_SYNTAX_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5205, "SQL syntax error"),
-    DATABASE_LOCK_TIMEOUT(HttpStatus.REQUEST_TIMEOUT, 5206, "Database lock timeout"),
-    
-    // ===== 5300-5399: 외부 서비스 에러 =====
-    EXTERNAL_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, 5300, "External service unavailable"),
-    EXTERNAL_SERVICE_TIMEOUT(HttpStatus.REQUEST_TIMEOUT, 5301, "External service timeout"),
-    EXTERNAL_SERVICE_ERROR(HttpStatus.BAD_GATEWAY, 5302, "External service error"),
-    EXTERNAL_API_RATE_LIMIT(HttpStatus.TOO_MANY_REQUESTS, 5303, "External API rate limit exceeded"),
-    EXTERNAL_SERVICE_AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, 5304, "External service authentication failed"),
-    EXTERNAL_SERVICE_AUTHORIZATION_FAILED(HttpStatus.FORBIDDEN, 5305, "External service authorization failed"),
-    CIRCUIT_BREAKER_OPEN(HttpStatus.SERVICE_UNAVAILABLE, 5350, "Circuit breaker is open");
-
-    private final HttpStatus httpStatus;
-    private final int code;
-    private final String message;
+public interface ErrorCode {
 
     /**
      * HTTP 상태 코드 반환
      */
-    public int getStatusCode() {
-        return httpStatus.value();
+    HttpStatus getHttpStatus();
+
+    /**
+     * 에러 코드 반환
+     */
+    int getCode();
+
+    /**
+     * 에러 메시지 반환
+     */
+    String getMessage();
+
+    /**
+     * HTTP 상태 코드 값 반환
+     */
+    default int getStatusCode() {
+        return getHttpStatus().value();
     }
 
     /**
      * 문자열 형태의 에러 코드 반환
      */
-    public String getCodeAsString() {
-        return String.valueOf(code);
+    default String getCodeAsString() {
+        return String.valueOf(getCode());
     }
 }

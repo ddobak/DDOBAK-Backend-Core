@@ -6,6 +6,39 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
 
+  # 데이터베이스 설정 (테스트용 H2)
+  datasource:
+    url: jdbc:h2:mem:testdb # H2 연결 주소 (In-Memory Mode)
+    driver-class-name: org.h2.Driver
+    username: username  # H2 접속 ID (사용자 지정)
+    password: password  # H2 접속 PW (사용자 지정)
+
+  # JPA 설정
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop  # DB 초기화 전략 (none, create, create-drop, update, validate)
+    properties:
+      hibernate:
+        show-sql: true  # 쿼리 로그 출력
+        format_sql: true  # 쿼리 로그 포맷 (정렬)
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # H2 콘솔
+  h2:
+    console:  # H2를 웹에서 관리할 수 있는 기능
+      enabled: true  # H2 Console 사용 여부
+      path: /h2-console  # H2 Console 접속 주소
+
+# 서버 설정
+server:
+  port: 8080
+
+# JWT 설정
+jwt:
+  secret: secret-key-for-jwt-token
+  expiration: 86400000 # 24시간 (밀리초)
+
 # 로깅 설정
 logging:
   level:

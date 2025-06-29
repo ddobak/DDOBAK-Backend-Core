@@ -2,9 +2,13 @@ package com.sbpb.ddobak.server.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -15,50 +19,48 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class User {
 
     @Id
-    @Column(name = "id")
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(nullable = false)
+    private String name; // 사용자가 입력한 이름
 
-    @Column(name = "nickname")
-    private String nickname;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status = UserStatus.ACTIVE; // 계정 상태
 
-    @Column(name = "created_at", nullable = false)
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt;
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
+    @Column
+    private LocalDateTime lastLoginAt; // 마지막 로그인 시간
 
     @Builder
-    public User(String id, String email, String name, String nickname, 
-                LocalDateTime createdAt, LocalDateTime lastLoginAt, Boolean isDeleted) {
-        this.id = id;
+    public User(String appleId, String email, String name) {
+        this.appleId = appleId;
         this.email = email;
         this.name = name;
-        this.nickname = nickname;
-        this.createdAt = createdAt;
-        this.lastLoginAt = lastLoginAt;
-        this.isDeleted = isDeleted != null ? isDeleted : false;
+        this.status = UserStatus.ACTIVE;
     }
 
-    @PrePersist
-    protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        if (isDeleted == null) {
-            isDeleted = false;
-        }
+    /**
+     * 사용자 이름 수정
+     */
+    public void updateName(String name) {
+        this.name = name;
     }
 
     /**
@@ -69,16 +71,25 @@ public class User {
     }
 
     /**
-     * 사용자 삭제 (소프트 삭제)
+     * 회원 탈퇴 처리
      */
-    public void delete() {
-        this.isDeleted = true;
+    public void withdraw() {
+        this.status = UserStatus.WITHDRAWN;
     }
 
     /**
-     * 닉네임 업데이트
+     * 사용자 상태 열거형
      */
-    public void updateNickname(String nickname) {
-        this.nickname = nickname;
+    public enum UserStatus {
+        ACTIVE,     // 활성
+        INACTIVE,   // 비활성
+        WITHDRAWN   // 탈퇴
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 } 
