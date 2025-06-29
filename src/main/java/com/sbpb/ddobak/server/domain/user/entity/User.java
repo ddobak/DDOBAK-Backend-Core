@@ -48,6 +48,9 @@ public class User {
     @Column
     private LocalDateTime lastLoginAt; // 마지막 로그인 시간
 
+    @Column(name = "apple_id") // TODO: 에러 때문에 임시로 만들어 둠. 나중에 지우기
+    private String appleId;
+
     @Builder
     public User(String appleId, String email, String name) {
         this.appleId = appleId;
