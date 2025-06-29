@@ -9,15 +9,15 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * 사용자 응답 DTO
+ * 사용자 프로필 응답 DTO
  */
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponse {
+public class UserProfileResponse {
 
-    private Long id;
+    private Long userId;
     private String email;
     private String name;
     private User.UserStatus status;
@@ -26,17 +26,13 @@ public class UserResponse {
     private LocalDateTime lastLoginAt;
 
     /**
-     * User 엔티티를 UserResponse로 변환
+     * 사용자 ID 응답 DTO
      */
-    public static UserResponse from(User user) {
-        return UserResponse.builder()
-            .id(user.getId())
-            .email(user.getEmail())
-            .name(user.getName())
-            .status(user.getStatus())
-            .createdAt(user.getCreatedAt())
-            .updatedAt(user.getUpdatedAt())
-            .lastLoginAt(user.getLastLoginAt())
-            .build();
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserIdResponse {
+        private Long userId;
     }
 } 

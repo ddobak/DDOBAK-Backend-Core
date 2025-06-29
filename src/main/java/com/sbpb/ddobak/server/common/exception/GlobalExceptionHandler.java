@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 /**
  * 전역 예외 처리기
@@ -37,32 +38,41 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 검증 예외 처리 (@Valid 어노테이션)
+     * MethodArgumentNotValidException 처리
+     * Bean Validation 실패 시 발생
      */
-    @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(BindException e) {
-        log.warn("Validation error occurred: {}", e.getMessage());
-
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().stream()
-            .findFirst()
-            .map(error -> error.getDefaultMessage())
-            .orElse("Validation failed");
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .findFirst()
+                .orElse("Validation failed");
 
         return ResponseEntity
-            .status(ErrorCode.INVALID_INPUT.getHttpStatus())
-            .body(ApiResponse.error(ErrorCode.INVALID_INPUT, message));
+            .status(CommonErrorCode.INVALID_INPUT.getHttpStatus())
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT, message));
     }
 
     /**
-     * 파일 업로드 크기 초과 예외 처리
+     * MaxUploadSizeExceededException 처리
+     * 파일 업로드 크기 초과 시 발생
      */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
-        log.warn("File upload size exceeded: {}", e.getMessage());
-
         return ResponseEntity
-            .status(ErrorCode.INVALID_INPUT.getHttpStatus())
-            .body(ApiResponse.error(ErrorCode.INVALID_INPUT, "File size exceeds the allowed limit"));
+            .status(CommonErrorCode.INVALID_INPUT.getHttpStatus())
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT, "File size exceeds the allowed limit"));
+    }
+
+    /**
+     * HttpMessageNotReadableException 처리
+     * JSON 파싱 실패 시 발생
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        return ResponseEntity
+            .status(CommonErrorCode.INVALID_INPUT.getHttpStatus())
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT, e.getMessage()));
     }
 
     /**
@@ -73,20 +83,19 @@ public class GlobalExceptionHandler {
         log.warn("Invalid argument: {}", e.getMessage());
 
         return ResponseEntity
-            .status(ErrorCode.INVALID_INPUT.getHttpStatus())
-            .body(ApiResponse.error(ErrorCode.INVALID_INPUT, e.getMessage()));
+            .status(CommonErrorCode.INVALID_INPUT.getHttpStatus())
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT, e.getMessage()));
     }
 
     /**
-     * 예상치 못한 모든 예외 처리
-     * 위에서 처리되지 않은 모든 예외의 최종 처리
+     * 일반적인 예외 처리
+     * 처리되지 않은 모든 예외를 캐치
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleUnexpectedException(Exception e) {
-        log.error("Unexpected error occurred", e);
-
+    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception e) {
+        log.error("Unhandled exception occurred", e);
         return ResponseEntity
-            .status(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
-            .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR, "An unexpected error occurred"));
+            .status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
+            .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR, "An unexpected error occurred"));
     }
 }

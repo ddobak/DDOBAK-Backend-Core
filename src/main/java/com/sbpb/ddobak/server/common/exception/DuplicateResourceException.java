@@ -13,25 +13,38 @@ public class DuplicateResourceException extends BusinessException {
     /**
      * 기본 중복 리소스 예외
      * 
-     * @param message 예외 메시지
+     * @param message 중복 리소스 메시지
      */
     public DuplicateResourceException(String message) {
-        super(ErrorCode.DUPLICATE_RESOURCE, message);
+        super(CommonErrorCode.DUPLICATE_RESOURCE, message);
     }
 
     /**
-     * 리소스 타입과 중복된 필드를 명시한 예외
+     * 특정 리소스 타입과 필드로 중복 예외
      * 
-     * @param resourceType 리소스 타입 (예: "User", "Document")
-     * @param field        중복된 필드명 (예: "email", "name")
+     * @param resourceType 리소스 타입 (예: "User", "Product")
+     * @param field        중복된 필드
      * @param value        중복된 값
      */
     public DuplicateResourceException(String resourceType, String field, Object value) {
-        super(ErrorCode.DUPLICATE_RESOURCE,
-                String.format("%s already exists with %s: %s", resourceType, field, value));
+        super(CommonErrorCode.DUPLICATE_RESOURCE,
+                String.format("%s with %s '%s' already exists", resourceType, field, value));
         addProperty("resourceType", resourceType);
         addProperty("field", field);
         addProperty("value", value);
+    }
+
+    /**
+     * 특정 리소스 타입과 ID로 중복 예외
+     * 
+     * @param resourceType 리소스 타입
+     * @param resourceId   리소스 ID
+     */
+    public DuplicateResourceException(String resourceType, Object resourceId) {
+        super(CommonErrorCode.DUPLICATE_RESOURCE,
+                String.format("%s with id '%s' already exists", resourceType, resourceId));
+        addProperty("resourceType", resourceType);
+        addProperty("resourceId", resourceId);
     }
 
     /**
@@ -41,7 +54,7 @@ public class DuplicateResourceException extends BusinessException {
      * @param duplicateFields 중복된 필드들과 값들의 맵
      */
     public DuplicateResourceException(String resourceType, java.util.Map<String, Object> duplicateFields) {
-        super(ErrorCode.DUPLICATE_RESOURCE,
+        super(CommonErrorCode.DUPLICATE_RESOURCE,
                 String.format("%s already exists with the provided fields", resourceType));
         addProperty("resourceType", resourceType);
         addProperty("duplicateFields", duplicateFields);
