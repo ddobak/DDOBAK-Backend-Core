@@ -72,17 +72,17 @@ public class ContractController {
     }
 
     /**
-     * 분석 요청
+     * 분석 요청 및 결과 반환
      * POST /contract/analysis
      */
     @PostMapping("/analysis")
-    public ApiResponse<AnalysisResponse> requestAnalysis(
+    public ApiResponse<AnalysisResultResponse> requestAnalysis(
             @RequestBody AnalysisRequest request,
             @RequestHeader("Authorization") String authorization) {
         
         // TODO: 사용자 권한 검증
         
-        AnalysisResponse response = documentProcessService.requestAnalysis(request);
+        AnalysisResultResponse response = documentProcessService.requestAnalysis(request);
         return ApiResponse.success(response, SuccessCode.SUCCESS);
     }
 

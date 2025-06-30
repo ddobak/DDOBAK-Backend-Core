@@ -18,6 +18,10 @@ public class ToxicClause {
     @Column(name = "analysis_id", nullable = false)
     private String analysisId;
 
+    @Column(name = "title")
+    @Setter
+    private String title;
+
     @Column(name = "clause", columnDefinition = "TEXT")
     @Setter
     private String clause;
@@ -43,10 +47,11 @@ public class ToxicClause {
     @Setter
     private ContractAnalysis contractAnalysis;
 
-    public ToxicClause(String id, String analysisId, String clause, String reason, 
+    public ToxicClause(String id, String analysisId, String title, String clause, String reason, 
                        String reasonReference, Integer sourceContractTagIdx, Integer warnLevel) {
         this.id = id;
         this.analysisId = analysisId;
+        this.title = title;
         this.clause = clause;
         this.reason = reason;
         this.reasonReference = reasonReference;

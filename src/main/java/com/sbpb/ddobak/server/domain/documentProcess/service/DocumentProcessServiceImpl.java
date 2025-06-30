@@ -41,7 +41,7 @@ public class DocumentProcessServiceImpl implements DocumentProcessService {
     }
 
     @Override
-    public AnalysisResponse requestAnalysis(AnalysisRequest request) {
+    public AnalysisResultResponse requestAnalysis(AnalysisRequest request) {
         return analysisProcessService.requestAnalysis(request);
     }
 

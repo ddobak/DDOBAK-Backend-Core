@@ -30,9 +30,9 @@ public interface DocumentProcessService {
     void updateOcrContent(String contractId, OcrUpdateRequest request);
 
     /**
-     * 분석 요청
+     * 분석 요청 및 결과 반환
      */
-    AnalysisResponse requestAnalysis(AnalysisRequest request);
+    AnalysisResultResponse requestAnalysis(AnalysisRequest request);
 
     /**
      * 분석 결과 조회
