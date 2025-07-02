@@ -1,6 +1,6 @@
 package com.sbpb.ddobak.server.domain.user.response;
 
-import com.sbpb.ddobak.server.common.response.SuccessCode;
+import com.sbpb.ddobak.server.common.response.BaseSuccessCode;
 
 /**
  * User 도메인 성공 코드 정의 (2xxx 범위)
@@ -13,7 +13,7 @@ import com.sbpb.ddobak.server.common.response.SuccessCode;
  * - 2010-2019: 사용자 인증 관련 성공
  * - 2020-2029: 사용자 상태 관련 성공
  */
-public enum UserSuccessCode implements SuccessCode {
+public enum UserSuccessCode implements BaseSuccessCode {
 
     // ===== 2000-2009: 사용자 프로필 관련 성공 =====
     PROFILE_CREATED(2000, "사용자 프로필이 성공적으로 생성되었습니다"),

@@ -11,14 +11,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.sbpb.ddobak.server.common.exception.ErrorCode;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * API 공통 응답 형식
  */
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Getter
+@Setter
 public class ApiResponse<T> {
 
     @JsonProperty("success")
@@ -48,7 +51,7 @@ public class ApiResponse<T> {
     /**
      * 도메인별 성공 응답 생성 (데이터 포함)
      */
-    public static <T, S extends SuccessCode> ApiResponse<T> success(T data, S successCode) {
+    public static <T, S extends BaseSuccessCode> ApiResponse<T> success(T data, S successCode) {
         return new ApiResponse<>(
                 true,
                 successCode.getCode(),
@@ -62,7 +65,7 @@ public class ApiResponse<T> {
     /**
      * 도메인별 성공 응답 생성 (데이터 없음)
      */
-    public static <T, S extends SuccessCode> ApiResponse<T> success(S successCode) {
+    public static <T, S extends BaseSuccessCode> ApiResponse<T> success(S successCode) {
         return new ApiResponse<>(
                 true,
                 successCode.getCode(),

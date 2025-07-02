@@ -27,9 +27,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String appleId; // 애플에서 제공하는 고유 ID (sub)
-
     @Column(nullable = false)
     private String email;
 
@@ -50,6 +47,9 @@ public class User {
 
     @Column
     private LocalDateTime lastLoginAt; // 마지막 로그인 시간
+
+    @Column(name = "apple_id") // TODO: 에러 때문에 임시로 만들어 둠. 나중에 지우기
+    private String appleId;
 
     @Builder
     public User(String appleId, String email, String name) {
