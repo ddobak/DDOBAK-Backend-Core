@@ -28,11 +28,12 @@ public class ContractController {
     @PostMapping(value = "/ocr", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<OcrResponse> processOcr(
             @RequestParam("files") List<MultipartFile> files,
-            @RequestParam("contractType") String contractType,
-            @RequestHeader("Authorization") String authorization) {
+            @RequestParam("contractType") String contractType/*,
+            @RequestHeader("Authorization") String authorization*/) {
         
         // TODO: Authorization에서 사용자 ID 추출
-        String userId = extractUserIdFromToken(authorization);
+        // String userId = extractUserIdFromToken(authorization);
+        String userId = "user123";
         
         OcrRequest request = new OcrRequest(files, contractType);
         OcrResponse response = documentProcessService.processOcr(userId, request);
@@ -46,8 +47,8 @@ public class ContractController {
      */
     @GetMapping("/ocr/{contractId}")
     public ApiResponse<OcrContentResponse> getOcrResults(
-            @PathVariable("contractId") String contractId,
-            @RequestHeader("Authorization") String authorization) {
+            @PathVariable("contractId") String contractId/*,
+            @RequestHeader("Authorization") String authorization*/) {
         
         // TODO: 사용자 권한 검증
         
@@ -62,8 +63,8 @@ public class ContractController {
     @PatchMapping("/ocr/{contractId}")
     public ApiResponse<Void> updateOcrContent(
             @PathVariable("contractId") String contractId,
-            @RequestBody OcrUpdateRequest request,
-            @RequestHeader("Authorization") String authorization) {
+            @RequestBody OcrUpdateRequest request/*,
+            @RequestHeader("Authorization") String authorization*/) {
         
         // TODO: 사용자 권한 검증
         
@@ -77,8 +78,8 @@ public class ContractController {
      */
     @PostMapping("/analysis")
     public ApiResponse<AnalysisResponse> requestAnalysis(
-            @RequestBody AnalysisRequest request,
-            @RequestHeader("Authorization") String authorization) {
+            @RequestBody AnalysisRequest request/*,
+            @RequestHeader("Authorization") String authorization*/) {
         
         // TODO: 사용자 권한 검증
         
@@ -93,8 +94,8 @@ public class ContractController {
     @GetMapping("/{contractId}/analysis/{analysisId}")
     public ApiResponse<AnalysisResultResponse> getAnalysisResult(
             @PathVariable("contractId") String contractId,
-            @PathVariable("analysisId") String analysisId,
-            @RequestHeader("Authorization") String authorization) {
+            @PathVariable("analysisId") String analysisId/*,
+            @RequestHeader("Authorization") String authorization*/) {
         
         // TODO: 사용자 권한 검증
         
