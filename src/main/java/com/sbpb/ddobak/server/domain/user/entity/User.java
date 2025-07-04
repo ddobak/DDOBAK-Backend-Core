@@ -70,14 +70,7 @@ public class User {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
 
-    /**
-     * 사용자 상태 Enum
-     */
-    public enum UserStatus {
-        ACTIVE,    // 활성 상태
-        INACTIVE,  // 비활성 상태
-        DELETED    // 삭제된 상태
-    }
+
 
     @Builder
     public User(String email, String name, String nickname, String profileImageUrl,
