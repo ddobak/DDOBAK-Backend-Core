@@ -3,6 +3,8 @@ package com.sbpb.ddobak.server.domain.user.service;
 import com.sbpb.ddobak.server.common.exception.DuplicateResourceException;
 import com.sbpb.ddobak.server.common.utils.IdGenerator;
 import com.sbpb.ddobak.server.domain.user.dto.CreateUserRequest;
+import com.sbpb.ddobak.server.domain.user.dto.UserProfileRequest;
+import com.sbpb.ddobak.server.domain.user.dto.UserProfileResponse;
 import com.sbpb.ddobak.server.domain.user.dto.UserResponse;
 import com.sbpb.ddobak.server.domain.user.entity.User;
 import com.sbpb.ddobak.server.domain.user.repository.UserRepository;
@@ -46,5 +48,22 @@ public class UserService {
         log.info("User created successfully with ID: {}", savedUser.getId());
 
         return UserResponse.from(savedUser);
+    }
+
+    // UserController에서 필요한 메서드들 - 최소 구현
+    public UserProfileResponse.UserIdResponse saveUserProfile(UserProfileRequest request) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    public UserProfileResponse getUserProfile(Long userId) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    public UserProfileResponse updateUserProfile(Long userId, UserProfileRequest request) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    public void withdrawUser(Long userId) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 } 
