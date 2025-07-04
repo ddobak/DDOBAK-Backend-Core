@@ -54,6 +54,7 @@ alwaysApply: false
 ### 입력 스키마
 ```json
 {
+  "contractId": "C7X9K2M1",
   "contractTexts": [
     "첫번째 사진 ocr 결과 내용....",
     "두번째 사진 ocr 결과 내용...."
@@ -61,6 +62,7 @@ alwaysApply: false
 }
 ```
 
+- `contractId`: 계약서 ID
 - `contractTexts`: 배열 형태로 주어진 OCR 결과
 
 ### 출력 스키마
@@ -112,6 +114,7 @@ CompletableFuture<InvokeResponse> future = lambdaUtil.invokeAsync(
 ```java
 // Analysis Lambda Payload 클래스
 public class AnalysisLambdaPayload {
+    private String contractId;
     private List<String> contractTexts;
     
     // 생성자, getter, setter
@@ -121,7 +124,7 @@ public class AnalysisLambdaPayload {
 List<String> contractTexts = ocrContents.stream()
     .map(OcrContent::getContent)
     .collect(Collectors.toList());
-AnalysisLambdaPayload payload = new AnalysisLambdaPayload(contractTexts);
+AnalysisLambdaPayload payload = new AnalysisLambdaPayload(contractId, contractTexts);
 CompletableFuture<InvokeResponse> future = lambdaUtil.invokeAsync(
     awsConfig.getLambda().getAnalysisFunctionName(), 
     payload
