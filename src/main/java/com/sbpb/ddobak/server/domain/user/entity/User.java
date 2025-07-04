@@ -17,6 +17,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
+    /**
+     * 사용자 상태 enum
+     */
+    public enum UserStatus {
+        ACTIVE,     // 활성 상태
+        INACTIVE,   // 비활성 상태
+        SUSPENDED,  // 정지 상태
+        DELETED     // 삭제 상태
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -33,6 +43,10 @@ public class User {
 
     @Column(name = "profile_image_url")
     private String profileImageUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private UserStatus status;
 
     // OAuth 관련 필드
     @Column(name = "oauth_provider")
@@ -58,12 +72,13 @@ public class User {
 
     @Builder
     public User(String email, String name, String nickname, String profileImageUrl,
-                String oauthProvider, String oauthProviderId, Boolean emailVerified,
+                UserStatus status, String oauthProvider, String oauthProviderId, Boolean emailVerified,
                 LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime lastLoginAt, Boolean isDeleted) {
         this.email = email;
         this.name = name;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
+        this.status = status;
         this.oauthProvider = oauthProvider;
         this.oauthProviderId = oauthProviderId;
         this.emailVerified = emailVerified;
@@ -87,6 +102,9 @@ public class User {
         }
         if (emailVerified == null) {
             emailVerified = false;
+        }
+        if (status == null) {
+            status = UserStatus.ACTIVE;
         }
     }
 
@@ -124,6 +142,15 @@ public class User {
      */
     public void delete() {
         this.isDeleted = true;
+        this.status = UserStatus.DELETED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 사용자 상태 업데이트
+     */
+    public void updateStatus(UserStatus status) {
+        this.status = status;
         this.updatedAt = LocalDateTime.now();
     }
 
