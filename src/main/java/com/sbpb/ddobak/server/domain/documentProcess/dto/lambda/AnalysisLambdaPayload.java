@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AnalysisLambdaPayload {
+    private String contractId;
     
     private List<String> contractTexts;
 } 

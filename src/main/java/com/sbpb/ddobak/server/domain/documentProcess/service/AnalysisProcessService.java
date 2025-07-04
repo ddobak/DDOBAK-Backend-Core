@@ -68,7 +68,7 @@ public class AnalysisProcessService {
                 .map(OcrContent::getContent)
                 .collect(Collectors.toList());
             
-            AnalysisLambdaPayload payload = new AnalysisLambdaPayload(contractTexts);
+            AnalysisLambdaPayload payload = new AnalysisLambdaPayload(request.getContractId(), contractTexts);
             
             log.debug("Analysis Lambda 호출 준비 - ContractId: {}, AnalysisId: {}, OCR 페이지 수: {}", 
                      request.getContractId(), analysisId, contractTexts.size());
