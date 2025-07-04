@@ -196,6 +196,7 @@ public class OcrProcessService {
             htmlArray.add(new OcrContentResponse.HtmlElement(
                 "content", 
                 content.getContent(), 
+                content.getId(),    // OCR 콘텐츠의 ID 추가
                 content.getTagIdx()
             ));
         }

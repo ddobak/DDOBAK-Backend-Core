@@ -84,8 +84,8 @@ class ContractControllerTest {
     void getOcrResults_Success() throws Exception {
         // given
         List<OcrContentResponse.HtmlElement> htmlArray = List.of(
-            new OcrContentResponse.HtmlElement("content", "<div>테스트 내용 1</div>", 1001),
-            new OcrContentResponse.HtmlElement("content", "<div>테스트 내용 2</div>", 1002)
+            new OcrContentResponse.HtmlElement("content", "<div>테스트 내용 1</div>", "OCR001", 1001),
+            new OcrContentResponse.HtmlElement("content", "<div>테스트 내용 2</div>", "OCR002", 1002)
         );
         OcrContentResponse response = new OcrContentResponse(2, "<div>테스트 내용 1</div><div>테스트 내용 2</div>", htmlArray);
 
