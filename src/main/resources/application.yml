@@ -28,16 +28,41 @@ spring:
 server:
   port: 8080
 
-# JWT 설정
-jwt:
-  secret: secret-key-for-jwt-token
-  expiration: 86400000 # 24시간 (밀리초)
-
 # 로깅 설정
 logging:
   level:
     com.sbpb.ddobak.server.common.utils.LambdaUtil: DEBUG
     com.sbpb.ddobak.server.domain.documentProcess.service.DocumentProcessService: DEBUG
+
+# Apple OAuth 설정
+apple:
+  oauth:
+    # Apple Developer - 추후 설정 필요!!!!!!!!
+    team-id: ${APPLE_TEAM_ID:TEAM_ID}
+    
+    # Apple Developer Console에서 생성한 Service ID (App ID가 아님)
+    # Services IDs > 새로 생성하거나 기존 Service ID 사용
+    client-id: ${APPLE_CLIENT_ID:SERVICE_ID}  
+    
+    # Private Key (.p8 파일)의 Key ID
+    # Keys > 생성한 Private Key의 Key ID
+    key-id: ${APPLE_KEY_ID:KEY_ID} 
+    
+    # Private Key (.p8 파일) 내용을 한 줄로 변환한 것
+    # -----BEGIN PRIVATE KEY----- 부분 포함, \n으로 줄바꿈 처리
+    # 변환 방법: awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' AuthKey_AB12CD34EF.p8
+    private-key: ${APPLE_PRIVATE_KEY:PRIVATE_KEY_CONTENT}
+    
+    # Apple 고정 값 (고정)
+    issuer: "https://appleid.apple.com"
+    public-keys-url: "https://appleid.apple.com/auth/keys"
+
+# JWT 설정
+jwt:
+  # 키 생성: openssl rand -base64 64
+  secret: ${JWT_SECRET:CHANGE_THIS_IN_PRODUCTION_ENVIRONMENT}
+  access-token-expiration: 3600000   # 1시간 (밀리초)
+  refresh-token-expiration: 604800000 # 7일 (밀리초)
 
 # AWS 설정
 aws:

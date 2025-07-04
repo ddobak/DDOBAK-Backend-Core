@@ -9,53 +9,34 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * 사용자 Repository
- * 사용자 데이터 접근을 위한 인터페이스.
+ * 사용자 레포지토리
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
-     * 애플 ID로 사용자 조회
-     * @param appleId 애플에서 제공하는 고유 ID
-     * @return 사용자 정보 (Optional)
-     */
-    Optional<User> findByAppleId(String appleId);
-
-    /**
      * 이메일로 사용자 조회
-     * @param email 사용자 이메일
-     * @return 사용자 정보 (Optional)
      */
     Optional<User> findByEmail(String email);
 
     /**
-     * 애플 ID로 사용자 존재 여부 확인
-     * @param appleId 애플에서 제공하는 고유 ID
-     * @return 존재 여부
-     */
-    boolean existsByAppleId(String appleId);
-
-    /**
-     * 이메일로 사용자 존재 여부 확인
-     * @param email 사용자 이메일
-     * @return 존재 여부
+     * 이메일 존재 여부 확인
      */
     boolean existsByEmail(String email);
 
     /**
-     * 활성 상태인 사용자를 애플 ID로 조회
-     * @param appleId 애플에서 제공하는 고유 ID
-     * @return 활성 사용자 정보 (Optional)
+     * Apple ID로 사용자 조회
+     * @param appleId Apple OAuth Provider ID
+     * @return 사용자 Optional
      */
-    @Query("SELECT u FROM User u WHERE u.appleId = :appleId AND u.status = 'ACTIVE'")
-    Optional<User> findActiveUserByAppleId(@Param("appleId") String appleId);
+    @Query("SELECT u FROM User u WHERE u.oauthProvider = 'apple' AND u.oauthProviderId = :appleId")
+    Optional<User> findByAppleId(@Param("appleId") String appleId);
 
     /**
-     * 활성 상태인 사용자를 이메일로 조회
-     * @param email 사용자 이메일
-     * @return 활성 사용자 정보 (Optional)
+     * OAuth 제공자와 Provider ID로 사용자 조회
+     * @param provider OAuth 제공자 (apple, google, kakao 등)
+     * @param providerId OAuth Provider ID
+     * @return 사용자 Optional
      */
-    @Query("SELECT u FROM User u WHERE u.email = :email AND u.status = 'ACTIVE'")
-    Optional<User> findActiveUserByEmail(@Param("email") String email);
+    Optional<User> findByOauthProviderAndOauthProviderId(String provider, String providerId);
 } 
