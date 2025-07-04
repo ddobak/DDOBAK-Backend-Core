@@ -22,7 +22,7 @@ import java.util.Collections;
  * CORS Preflight 요청과 Authorization 헤더를 올바르게 처리하여
  * 브라우저 CORS 에러를 방지하는 JWT 인증 필터
  */
-@Component
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

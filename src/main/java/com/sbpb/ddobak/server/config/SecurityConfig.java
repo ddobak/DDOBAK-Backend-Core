@@ -19,8 +19,8 @@ import java.util.Arrays;
  * JWT 기반 인증과 Apple 로그인을 지원하는 보안 설정
  * CORS Preflight 요청 처리를 포함한 브라우저 호환성 확보
  */
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
