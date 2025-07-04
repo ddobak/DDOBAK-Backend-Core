@@ -70,8 +70,6 @@ public class User {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
 
-
-
     @Builder
     public User(String email, String name, String nickname, String profileImageUrl,
                 UserStatus status, String oauthProvider, String oauthProviderId, Boolean emailVerified,

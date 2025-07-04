@@ -24,6 +24,7 @@ public class OcrContentResponse {
     public static class HtmlElement {
         private String category;
         private String element;
+        private String id;
         private int tagIdx;
     }
 } 
