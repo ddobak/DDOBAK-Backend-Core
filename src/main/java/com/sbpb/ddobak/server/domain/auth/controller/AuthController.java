@@ -1,6 +1,7 @@
 package com.sbpb.ddobak.server.domain.auth.controller;
 
 import com.sbpb.ddobak.server.common.response.ApiResponse;
+import com.sbpb.ddobak.server.common.response.SuccessCode;
 import com.sbpb.ddobak.server.domain.auth.dto.AppleLoginRequest;
 import com.sbpb.ddobak.server.domain.auth.dto.AuthResponse;
 import com.sbpb.ddobak.server.domain.auth.response.AuthSuccessCode;
@@ -98,7 +99,7 @@ public class AuthController {
         boolean isValid = true; // 임시 구현
         
         return ResponseEntity.ok(
-            ApiResponse.success(isValid, AuthSuccessCode.TOKEN_VALIDATED)
+            ApiResponse.success(isValid, SuccessCode.SUCCESS)
         );
     }
 } 

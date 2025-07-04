@@ -73,4 +73,4 @@ aws:
     service-bucket: ${SERVICE_BUCKET:ddobak-test}  # 서비스용 버킷
   lambda:
     ocr-function-name: ocr_lambda
-    analysis-function-name: test_lambda
+    analysis-function-name: bedrock_lambda
