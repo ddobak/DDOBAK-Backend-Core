@@ -13,38 +13,38 @@ public class ResourceNotFoundException extends BusinessException {
     /**
      * 기본 리소스 없음 예외
      * 
-     * @param message 예외 메시지
+     * @param message 리소스를 찾을 수 없다는 메시지
      */
     public ResourceNotFoundException(String message) {
-        super(ErrorCode.RESOURCE_NOT_FOUND, message);
+        super(CommonErrorCode.RESOURCE_NOT_FOUND, message);
     }
 
     /**
-     * 리소스 타입과 식별자를 명시한 예외
+     * 특정 리소스 타입과 ID로 리소스 없음 예외
      * 
-     * @param resourceType 리소스 타입 (예: "User", "Document", "Content")
-     * @param identifier   식별자 (ID, 이메일, 이름 등)
+     * @param resourceType 리소스 타입 (예: "User", "Product")
+     * @param resourceId   리소스 ID
      */
-    public ResourceNotFoundException(String resourceType, Object identifier) {
-        super(ErrorCode.RESOURCE_NOT_FOUND,
-                String.format("%s not found with identifier: %s", resourceType, identifier));
+    public ResourceNotFoundException(String resourceType, Object resourceId) {
+        super(CommonErrorCode.RESOURCE_NOT_FOUND,
+                String.format("%s with id '%s' not found", resourceType, resourceId));
         addProperty("resourceType", resourceType);
-        addProperty("identifier", identifier);
+        addProperty("resourceId", resourceId);
     }
 
     /**
-     * 특정 필드로 리소스를 찾을 수 없는 경우
+     * 특정 조건으로 리소스를 찾을 수 없을 때
      * 
      * @param resourceType 리소스 타입
-     * @param fieldName    검색 필드명
-     * @param fieldValue   검색 필드값
+     * @param field        검색 필드
+     * @param value        검색 값
      */
-    public ResourceNotFoundException(String resourceType, String fieldName, Object fieldValue) {
-        super(ErrorCode.RESOURCE_NOT_FOUND,
-                String.format("%s not found with %s: %s", resourceType, fieldName, fieldValue));
+    public ResourceNotFoundException(String resourceType, String field, Object value) {
+        super(CommonErrorCode.RESOURCE_NOT_FOUND,
+                String.format("%s with %s '%s' not found", resourceType, field, value));
         addProperty("resourceType", resourceType);
-        addProperty("fieldName", fieldName);
-        addProperty("fieldValue", fieldValue);
+        addProperty("field", field);
+        addProperty("value", value);
     }
 
     /**

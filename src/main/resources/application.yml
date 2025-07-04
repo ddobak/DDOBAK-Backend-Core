@@ -6,6 +6,34 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
 
+  # 데이터베이스 설정 (PostgreSQL)
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:ddobak_db}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:ddobak_user}
+    password: ${DB_PASSWORD:your_password}
+
+  # JPA 설정
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update  # DB 스키마 자동 생성
+    properties:
+      hibernate:
+        show-sql: true  # 쿼리 로그 출력
+        format_sql: true  # 쿼리 로그 포맷 (정렬)
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# 서버 설정
+server:
+  port: 8080
+
+# 로깅 설정
+logging:
+  level:
+    com.sbpb.ddobak.server.common.utils.LambdaUtil: DEBUG
+    com.sbpb.ddobak.server.domain.documentProcess.service.DocumentProcessService: DEBUG
+
 # Apple OAuth 설정
 apple:
   oauth:
@@ -43,5 +71,6 @@ aws:
   s3:
     test-bucket: ddobak-test  # 테스트용 버킷
     service-bucket: ${SERVICE_BUCKET:ddobak-test}  # 서비스용 버킷
-  step-functions:
-    contract-analysis-state-machine-arn: ${ANALYSIS_STEP_FUNCTIONS_ARN:arn_for_step_functions}
+  lambda:
+    ocr-function-name: test_ocr
+    analysis-function-name: test_bedrock

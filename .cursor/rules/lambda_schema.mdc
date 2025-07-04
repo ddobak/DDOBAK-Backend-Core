@@ -1,0 +1,136 @@
+---
+description: when working on Lambda-related tasks
+globs: 
+alwaysApply: false
+---
+# Lambda 입출력 스키마 정의
+
+## OCR Lambda
+
+### 설명
+- OCR 수행하는 lambda의 입출력 형식 정의
+- 개별 람다는 1개 이미지만 처리한다.
+
+### 입력 스키마
+```json
+{
+  "s3Key": "contracts/C7X9K2M1/page_0_document.jpg",
+  "pageIdx": 0
+}
+```
+
+- `s3Key`: S3 키 (파일 경로)
+- `pageIdx`: 서버 처리용 페이지 번호
+
+### 출력 스키마
+```json
+{
+  "success": true,
+  "message": "OCR processing completed successfully",
+  "data": {
+    "page_idx": 0,
+    "html_entire": "<div>전체 HTML 내용</div>",
+    "html_array": [
+      {
+        "category": "table",
+        "html": "<table>테이블 HTML</table>",
+        "id": "table_001"
+      },
+      {
+        "category": "text",
+        "html": "<p>텍스트 내용</p>",
+        "id": "text_001"
+      }
+    ]
+  }
+}
+```
+
+## Analysis Lambda
+
+### 설명
+- Bedrock 분석 요청 수행하는 람다
+
+### 입력 스키마
+```json
+{
+  "contractTexts": [
+    "첫번째 사진 ocr 결과 내용....",
+    "두번째 사진 ocr 결과 내용...."
+  ]
+}
+```
+
+- `contractTexts`: 배열 형태로 주어진 OCR 결과
+
+### 출력 스키마
+```json
+{
+  "success": true,
+  "message": "Analysis completed successfully",
+  "data": {
+    "summary": "계약서 요약 내용",
+    "ddobakCommentary": {
+      "overallComment": "전반적인 검토 의견",
+      "warningComment": "주의사항",
+      "advice": "조언 사항"
+    },
+    "toxics": [
+      {
+        "title": "독소조항 제목",
+        "clause": "독소조항 내용",
+        "reason": "독소조항 이유",
+        "reasonReference": "근거 법령 또는 참조",
+        "warnLevel": 3
+      }
+    ]
+  }
+}
+```
+
+## 구현 가이드
+
+### OCR Lambda 호출 방법
+```java
+// OCR Lambda Payload 클래스
+public class OcrLambdaPayload {
+    private String s3Key;
+    private int pageIdx;
+    
+    // 생성자, getter, setter
+}
+
+// 호출 예시
+OcrLambdaPayload payload = new OcrLambdaPayload(s3Key, pageIndex);
+CompletableFuture<InvokeResponse> future = lambdaUtil.invokeAsync(
+    awsConfig.getLambda().getOcrFunctionName(), 
+    payload
+);
+```
+
+### Analysis Lambda 호출 방법
+```java
+// Analysis Lambda Payload 클래스
+public class AnalysisLambdaPayload {
+    private List<String> contractTexts;
+    
+    // 생성자, getter, setter
+}
+
+// 호출 예시
+List<String> contractTexts = ocrContents.stream()
+    .map(OcrContent::getContent)
+    .collect(Collectors.toList());
+AnalysisLambdaPayload payload = new AnalysisLambdaPayload(contractTexts);
+CompletableFuture<InvokeResponse> future = lambdaUtil.invokeAsync(
+    awsConfig.getLambda().getAnalysisFunctionName(), 
+    payload
+);
+```
+
+## 주의사항
+- S3 bucket은 환경변수 `SERVICE_BUCKET`으로 정의
+- OCR Lambda는 개별 이미지 처리만 수행
+- Analysis Lambda는 모든 OCR 결과를 한번에 처리
+- 모든 Lambda 응답은 공통 형식 (`success`, `message`, `data`) 사용
+- 에러 처리 시 `success: false`와 적절한 `message` 포함

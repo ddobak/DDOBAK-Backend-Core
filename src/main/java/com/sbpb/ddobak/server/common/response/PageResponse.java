@@ -1,5 +1,8 @@
 package com.sbpb.ddobak.server.common.response;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 /**
@@ -19,6 +22,8 @@ import java.util.List;
  * }
  * }
  */
+@Getter
+@Setter
 public class PageResponse<T> {
 
     private List<T> content;
@@ -63,26 +68,13 @@ public class PageResponse<T> {
         return new PageResponse<>(content, pageInfo);
     }
 
-    // Getter/Setter 메서드들
-    public List<T> getContent() {
-        return content;
-    }
-
-    public void setContent(List<T> content) {
-        this.content = content;
-    }
-
-    public PageInfo getPageInfo() {
-        return pageInfo;
-    }
-
-    public void setPageInfo(PageInfo pageInfo) {
-        this.pageInfo = pageInfo;
-    }
+    // Getter/Setter 메서드들은 Lombok으로 자동 생성됨
 
     /**
      * 페이지 정보를 담는 내부 클래스
      */
+    @Getter
+    @Setter
     public static class PageInfo {
 
         private int currentPage;
@@ -107,54 +99,7 @@ public class PageResponse<T> {
             this.hasPrevious = hasPrevious;
         }
 
-        // Getter/Setter 메서드들
-        public int getCurrentPage() {
-            return currentPage;
-        }
-
-        public void setCurrentPage(int currentPage) {
-            this.currentPage = currentPage;
-        }
-
-        public int getPageSize() {
-            return pageSize;
-        }
-
-        public void setPageSize(int pageSize) {
-            this.pageSize = pageSize;
-        }
-
-        public long getTotalElements() {
-            return totalElements;
-        }
-
-        public void setTotalElements(long totalElements) {
-            this.totalElements = totalElements;
-        }
-
-        public int getTotalPages() {
-            return totalPages;
-        }
-
-        public void setTotalPages(int totalPages) {
-            this.totalPages = totalPages;
-        }
-
-        public boolean isHasNext() {
-            return hasNext;
-        }
-
-        public void setHasNext(boolean hasNext) {
-            this.hasNext = hasNext;
-        }
-
-        public boolean isHasPrevious() {
-            return hasPrevious;
-        }
-
-        public void setHasPrevious(boolean hasPrevious) {
-            this.hasPrevious = hasPrevious;
-        }
+        // Getter/Setter 메서드들은 Lombok으로 자동 생성됨
 
         @Override
         public String toString() {

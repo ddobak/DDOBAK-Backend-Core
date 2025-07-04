@@ -2,72 +2,85 @@ package com.sbpb.ddobak.server.domain.documentProcess.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * 계약서 분석 결과 엔티티
- */
 @Entity
 @Table(name = "contract_analyses")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ContractAnalysis {
 
     @Id
-    @Column(name = "id")
     private String id;
 
     @Column(name = "contract_id", nullable = false)
     private String contractId;
 
     @Column(name = "summary", columnDefinition = "TEXT")
+    @Setter
     private String summary;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "status")
+    @Setter
+    private String status;
+
+    @Column(name = "ddobak_overall_comment")
+    @Setter
+    private String ddobakOverallComment;
+
+    @Column(name = "ddobak_warning_comment")
+    @Setter
+    private String ddobakWarningComment;
+
+    @Column(name = "ddobak_advice")
+    @Setter
+    private String ddobakAdvice;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "process_status")
+    @Setter
+    private ProcessStatus processStatus;
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @LastModifiedDate
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contract_id", insertable = false, updatable = false)
+    @Setter
     private Contract contract;
 
-    @Builder
-    public ContractAnalysis(String id, String contractId, String summary, 
-                           LocalDateTime createdAt, LocalDateTime updatedAt) {
+    @OneToMany(mappedBy = "contractAnalysis", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ToxicClause> toxicClauses = new ArrayList<>();
+
+    public ContractAnalysis(String id, String contractId, String summary, String status) {
         this.id = id;
         this.contractId = contractId;
         this.summary = summary;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.status = status;
+        this.processStatus = ProcessStatus.IN_PROGRESS;
     }
 
-    @PrePersist
-    protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        if (createdAt == null) {
-            createdAt = now;
-        }
-        if (updatedAt == null) {
-            updatedAt = now;
-        }
+    public void addToxicClause(ToxicClause toxicClause) {
+        this.toxicClauses.add(toxicClause);
+        toxicClause.setContractAnalysis(this);
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * 분석 요약 업데이트
-     */
-    public void updateSummary(String summary) {
-        this.summary = summary;
-        this.updatedAt = LocalDateTime.now();
+    public enum ProcessStatus {
+        IN_PROGRESS, COMPLETED, FAILED
     }
 } 

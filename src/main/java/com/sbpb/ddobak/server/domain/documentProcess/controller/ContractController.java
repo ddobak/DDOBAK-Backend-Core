@@ -1,48 +1,113 @@
 package com.sbpb.ddobak.server.domain.documentProcess.controller;
 
 import com.sbpb.ddobak.server.common.response.ApiResponse;
-import com.sbpb.ddobak.server.domain.documentProcess.dto.*;
-import com.sbpb.ddobak.server.domain.documentProcess.exception.DocumentProcessSuccessCode;
-import com.sbpb.ddobak.server.domain.documentProcess.service.application.ContractApplicationService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import com.sbpb.ddobak.server.common.response.SuccessCode;
+import com.sbpb.ddobak.server.domain.documentProcess.dto.ocr.*;
+import com.sbpb.ddobak.server.domain.documentProcess.dto.analysis.*;
+import com.sbpb.ddobak.server.domain.documentProcess.service.DocumentProcessService;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-/**
- * 계약서 처리 컨트롤러
- */
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/contract")
-@RequiredArgsConstructor
-@Slf4j
+@RequestMapping("api/contract")
 public class ContractController {
 
-    private final ContractApplicationService contractApplicationService;
+    private final DocumentProcessService documentProcessService;
+
+    public ContractController(DocumentProcessService documentProcessService) {
+        this.documentProcessService = documentProcessService;
+    }
 
     /**
-     * 분석 요청 API
-     * POST /api/contract/analysis
+     * OCR 처리 요청
+     * POST /contract/ocr
      */
-    @PostMapping(value = "/analysis", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<ContractAnalysisResponse>> processAnalysis(
-            @ModelAttribute ContractAnalysisRequest request,
-            @RequestHeader(value = "Authorization", required = false) String authorization,
-            @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-
-        // 임시로 고정 사용자 ID 사용 (실제로는 JWT에서 추출)
-        String userId = "UTEST001";
+    @PostMapping(value = "/ocr", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<OcrResponse> processOcr(
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam("contractType") String contractType,
+            @RequestHeader("Authorization") String authorization) {
         
-        // 요청 정보 로깅
-        int fileCount = request.getFiles() != null ? request.getFiles().size() : 0;
-        log.info("Analysis request received - userId: {}, requestId: {}, fileCount: {}, clientId: {}", 
-                userId, requestId, fileCount, request.getClientId());
+        // TODO: Authorization에서 사용자 ID 추출
+        String userId = extractUserIdFromToken(authorization);
+        
+        OcrRequest request = new OcrRequest(files, contractType);
+        OcrResponse response = documentProcessService.processOcr(userId, request);
+        
+        return ApiResponse.success(response, SuccessCode.SUCCESS);
+    }
 
-        ContractAnalysisResponse response = contractApplicationService.processAnalysis(request, userId);
+    /**
+     * OCR 결과 조회
+     * GET /contract/ocr/{contractId}
+     */
+    @GetMapping("/ocr/{contractId}")
+    public ApiResponse<OcrContentResponse> getOcrResults(
+            @PathVariable("contractId") String contractId,
+            @RequestHeader("Authorization") String authorization) {
+        
+        // TODO: 사용자 권한 검증
+        
+        OcrContentResponse response = documentProcessService.getOcrResults(contractId);
+        return ApiResponse.success(response, SuccessCode.SUCCESS);
+    }
 
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponse.success(response, DocumentProcessSuccessCode.ANALYSIS_SUCCESS));
+    /**
+     * OCR 내용 수정
+     * PATCH /contract/ocr/{contractId}
+     */
+    @PatchMapping("/ocr/{contractId}")
+    public ApiResponse<Void> updateOcrContent(
+            @PathVariable("contractId") String contractId,
+            @RequestBody OcrUpdateRequest request,
+            @RequestHeader("Authorization") String authorization) {
+        
+        // TODO: 사용자 권한 검증
+        
+        documentProcessService.updateOcrContent(contractId, request);
+        return ApiResponse.success(SuccessCode.SUCCESS);
+    }
+
+    /**
+     * 분석 요청
+     * POST /contract/analysis
+     */
+    @PostMapping("/analysis")
+    public ApiResponse<AnalysisResponse> requestAnalysis(
+            @RequestBody AnalysisRequest request,
+            @RequestHeader("Authorization") String authorization) {
+        
+        // TODO: 사용자 권한 검증
+        
+        AnalysisResponse response = documentProcessService.requestAnalysis(request);
+        return ApiResponse.success(response, SuccessCode.SUCCESS);
+    }
+
+    /**
+     * 분석 결과 조회
+     * GET /contract/{contractId}/analysis/{analysisId}
+     */
+    @GetMapping("/{contractId}/analysis/{analysisId}")
+    public ApiResponse<AnalysisResultResponse> getAnalysisResult(
+            @PathVariable("contractId") String contractId,
+            @PathVariable("analysisId") String analysisId,
+            @RequestHeader("Authorization") String authorization) {
+        
+        // TODO: 사용자 권한 검증
+        
+        AnalysisResultResponse response = documentProcessService.getAnalysisResult(contractId, analysisId);
+        return ApiResponse.success(response, SuccessCode.SUCCESS);
+    }
+
+    /**
+     * Authorization 헤더에서 사용자 ID 추출
+     * TODO: 실제 JWT 토큰 파싱 로직 구현 필요
+     */
+    private String extractUserIdFromToken(String authorization) {
+        // 임시로 더미 사용자 ID 반환
+        return "user123";
     }
 } 

@@ -15,14 +15,14 @@ public class ExternalServiceException extends BusinessException {
      * 기본 외부 서비스 예외
      */
     public ExternalServiceException(String message) {
-        super(ErrorCode.EXTERNAL_SERVICE_ERROR, message);
+        super(CommonErrorCode.EXTERNAL_SERVICE_ERROR, message);
     }
 
     /**
      * 서비스명과 이유를 명시한 예외
      */
     public ExternalServiceException(String serviceName, String reason) {
-        super(ErrorCode.EXTERNAL_SERVICE_ERROR,
+        super(CommonErrorCode.EXTERNAL_SERVICE_ERROR,
                 String.format("External service '%s' error: %s", serviceName, reason));
         addProperty("serviceName", serviceName);
         addProperty("reason", reason);
