@@ -56,6 +56,15 @@ public class User {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
 
+    /**
+     * 사용자 상태 Enum
+     */
+    public enum UserStatus {
+        ACTIVE,    // 활성 상태
+        INACTIVE,  // 비활성 상태
+        DELETED    // 삭제된 상태
+    }
+
     @Builder
     public User(String email, String name, String nickname, String profileImageUrl,
                 String oauthProvider, String oauthProviderId, Boolean emailVerified,
@@ -93,6 +102,20 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 현재 사용자 상태 반환
+     * isDeleted와 emailVerified 상태를 기반으로 계산
+     */
+    public UserStatus getStatus() {
+        if (Boolean.TRUE.equals(isDeleted)) {
+            return UserStatus.DELETED;
+        }
+        if (Boolean.TRUE.equals(emailVerified)) {
+            return UserStatus.ACTIVE;
+        }
+        return UserStatus.INACTIVE;
     }
 
     /**
