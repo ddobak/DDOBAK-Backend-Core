@@ -1,6 +1,7 @@
 package com.sbpb.ddobak.server.domain.auth.controller;
 
 import com.sbpb.ddobak.server.common.response.ApiResponse;
+import com.sbpb.ddobak.server.common.response.SuccessCode;
 import com.sbpb.ddobak.server.domain.auth.dto.AppleLoginRequest;
 import com.sbpb.ddobak.server.domain.auth.dto.AuthResponse;
 import com.sbpb.ddobak.server.domain.auth.service.AuthService;
@@ -35,7 +36,7 @@ public class AuthController {
         AuthResponse response = authService.loginWithApple(request);
         
         return ResponseEntity.ok(
-            ApiResponse.success(response)
+            ApiResponse.success(response, SuccessCode.SUCCESS)
         );
     }
     
@@ -53,7 +54,7 @@ public class AuthController {
         AuthResponse response = authService.refreshToken(refreshToken);
         
         return ResponseEntity.ok(
-            ApiResponse.success(response)
+            ApiResponse.success(response, SuccessCode.SUCCESS)
         );
     }
     
@@ -76,7 +77,7 @@ public class AuthController {
         authService.logout(accessToken);
         
         return ResponseEntity.ok(
-            ApiResponse.success()
+            ApiResponse.success(SuccessCode.SUCCESS)
         );
     }
     
@@ -97,7 +98,7 @@ public class AuthController {
         boolean isValid = true; // 임시 구현
         
         return ResponseEntity.ok(
-            ApiResponse.success(isValid)
+            ApiResponse.success(isValid, SuccessCode.SUCCESS)
         );
     }
 } 
