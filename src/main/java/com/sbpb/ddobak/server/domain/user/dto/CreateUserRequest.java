@@ -25,7 +25,4 @@ public class CreateUserRequest {
     @NotBlank(message = "Name is required")
     @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
     private String name;
-
-    @Size(max = 50, message = "Nickname must not exceed 50 characters")
-    private String nickname;
 } 
