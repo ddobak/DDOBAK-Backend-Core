@@ -28,15 +28,22 @@ public class UserController {
      * POST /user/profile
      * 
      * @param request 사용자 프로필 요청
+     * @param authHeader Authorization 헤더 (JWT 토큰)
      * @return 사용자 ID 응답
      */
     @PostMapping("/profile")
     public ApiResponse<UserProfileResponse.UserIdResponse> saveUserProfile(
-            @Valid @RequestBody UserProfileRequest request) {
+            @Valid @RequestBody UserProfileRequest request,
+            @RequestHeader("Authorization") String authHeader) {
         log.info("사용자 프로필 저장 요청: name={}", request.getName());
         
         try {
-            UserProfileResponse.UserIdResponse response = userService.saveUserProfile(request);
+            // Bearer 토큰에서 실제 토큰 추출
+            String accessToken = authHeader.startsWith("Bearer ") 
+                ? authHeader.substring(7) 
+                : authHeader;
+                
+            UserProfileResponse.UserIdResponse response = userService.saveUserProfile(request, accessToken);
             return ApiResponse.success(response, UserSuccessCode.PROFILE_CREATED);
         } catch (IllegalArgumentException e) {
             log.error("사용자 프로필 저장 실패: {}", e.getMessage());
