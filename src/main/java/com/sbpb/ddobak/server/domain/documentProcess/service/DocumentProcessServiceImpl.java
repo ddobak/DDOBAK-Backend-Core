@@ -26,7 +26,7 @@ public class DocumentProcessServiceImpl implements DocumentProcessService {
     }
 
     @Override
-    public OcrResponse processOcr(String userId, OcrRequest request) {
+    public OcrResponse processOcr(Long userId, OcrRequest request) {
         return ocrProcessService.processOcr(userId, request);
     }
 

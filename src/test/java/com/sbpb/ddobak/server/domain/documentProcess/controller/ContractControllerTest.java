@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -62,7 +63,7 @@ class ContractControllerTest {
         // given
         OcrResponse ocrResponse = new OcrResponse(contractId, "success");
 
-        given(documentProcessService.processOcr(anyString(), any(OcrRequest.class)))
+        given(documentProcessService.processOcr(anyLong(), any(OcrRequest.class)))
                 .willReturn(ocrResponse);
 
         // when & then
@@ -76,7 +77,7 @@ class ContractControllerTest {
                 .andExpect(jsonPath("$.data.contractId").value(contractId))
                 .andExpect(jsonPath("$.data.ocrStatus").value("success"));
 
-        verify(documentProcessService).processOcr(anyString(), any(OcrRequest.class));
+        verify(documentProcessService).processOcr(anyLong(), any(OcrRequest.class));
     }
 
     @Test

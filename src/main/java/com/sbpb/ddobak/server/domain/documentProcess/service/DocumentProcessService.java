@@ -17,7 +17,7 @@ public interface DocumentProcessService {
     /**
      * OCR 처리 요청
      */
-    OcrResponse processOcr(String userId, OcrRequest request);
+    OcrResponse processOcr(Long userId, OcrRequest request);
 
     /**
      * OCR 결과 조회

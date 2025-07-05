@@ -24,7 +24,7 @@ public class Contract {
     private String id;
 
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    private Long userId;
 
     @Column(name = "img_s3_key")
     @Setter
@@ -44,7 +44,7 @@ public class Contract {
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ContractAnalysis> contractAnalyses = new ArrayList<>();
 
-    public Contract(String id, String userId, String imgS3Key) {
+    public Contract(String id, Long userId, String imgS3Key) {
         this.id = id;
         this.userId = userId;
         this.imgS3Key = imgS3Key;

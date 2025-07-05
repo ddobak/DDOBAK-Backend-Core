@@ -21,7 +21,7 @@ public interface SocialAccountRepository extends JpaRepository<SocialAccount, St
     /**
      * 사용자 ID로 소셜 계정 목록 조회
      */
-    List<SocialAccount> findByUserId(String userId);
+    List<SocialAccount> findByUserId(Long userId);
 
     /**
      * Provider와 이메일로 소셜 계정 조회
@@ -31,5 +31,5 @@ public interface SocialAccountRepository extends JpaRepository<SocialAccount, St
     /**
      * 사용자 ID와 Provider로 소셜 계정 조회
      */
-    Optional<SocialAccount> findByUserIdAndProvider(String userId, String provider);
+    Optional<SocialAccount> findByUserIdAndProvider(Long userId, String provider);
 } 

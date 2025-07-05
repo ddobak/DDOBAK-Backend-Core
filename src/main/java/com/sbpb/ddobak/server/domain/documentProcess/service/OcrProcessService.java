@@ -58,7 +58,7 @@ public class OcrProcessService {
     /**
      * OCR 처리 요청 - 병렬 처리
      */
-    public OcrResponse processOcr(String userId, OcrRequest request) {
+    public OcrResponse processOcr(Long userId, OcrRequest request) {
         // 1. 계약 생성
         String contractId = IdGenerator.generate();
         String s3KeyPrefix = "contracts/" + contractId + "/";

@@ -22,7 +22,7 @@ public class SocialAccount {
     private String id;
 
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    private Long userId;
 
     @Column(name = "provider", nullable = false)
     private String provider;
@@ -37,7 +37,7 @@ public class SocialAccount {
     private LocalDateTime createdAt;
 
     @Builder
-    public SocialAccount(String id, String userId, String provider, 
+    public SocialAccount(String id, Long userId, String provider, 
                         String providerUserId, String email, LocalDateTime createdAt) {
         this.id = id;
         this.userId = userId;
