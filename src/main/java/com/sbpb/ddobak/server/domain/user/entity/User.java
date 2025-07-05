@@ -28,15 +28,12 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "nickname", nullable = true)
-    private String nickname;
-
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
     // OAuth 관련 필드
     @Column(name = "oauth_provider")
-    private String oauthProvider;  // apple, google, kakao 등
+    private String oauthProvider;  // apple
 
     @Column(name = "oauth_provider_id")
     private String oauthProviderId;  // OAuth 제공자에서의 사용자 ID
@@ -66,12 +63,11 @@ public class User {
     }
 
     @Builder
-    public User(String email, String name, String nickname, String profileImageUrl,
+    public User(String email, String name, String profileImageUrl,
                 String oauthProvider, String oauthProviderId, Boolean emailVerified,
                 LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime lastLoginAt, Boolean isDeleted) {
         this.email = email;
         this.name = name;
-        this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
         this.oauthProvider = oauthProvider;
         this.oauthProviderId = oauthProviderId;
@@ -129,12 +125,9 @@ public class User {
     /**
      * 프로필 정보 업데이트
      */
-    public void updateProfile(String name, String nickname, String profileImageUrl) {
+    public void updateProfile(String name, String profileImageUrl) {
         if (name != null) {
             this.name = name;
-        }
-        if (nickname != null) {
-            this.nickname = nickname;
         }
         if (profileImageUrl != null) {
             this.profileImageUrl = profileImageUrl;

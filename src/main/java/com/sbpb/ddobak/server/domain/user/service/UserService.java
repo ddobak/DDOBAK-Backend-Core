@@ -42,7 +42,6 @@ public class UserService {
         User user = User.builder()
             .email(request.getEmail())
             .name(request.getName())
-            .nickname(request.getNickname())
             .build();
 
         User savedUser = userRepository.save(user);
@@ -75,7 +74,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
             
             // 사용자 이름 업데이트
-            user.updateProfile(request.getName(), null, null);
+            user.updateProfile(request.getName(), null);
             userRepository.save(user);
             
             log.info("User profile updated successfully for userId: {}", userId);
