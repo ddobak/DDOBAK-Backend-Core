@@ -28,9 +28,6 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "profile_image_url")
-    private String profileImageUrl;
-
     // OAuth 관련 필드
     @Column(name = "oauth_provider")
     private String oauthProvider;  // apple
@@ -63,12 +60,11 @@ public class User {
     }
 
     @Builder
-    public User(String email, String name, String profileImageUrl,
+    public User(String email, String name,
                 String oauthProvider, String oauthProviderId, Boolean emailVerified,
                 LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime lastLoginAt, Boolean isDeleted) {
         this.email = email;
         this.name = name;
-        this.profileImageUrl = profileImageUrl;
         this.oauthProvider = oauthProvider;
         this.oauthProviderId = oauthProviderId;
         this.emailVerified = emailVerified;
@@ -125,12 +121,9 @@ public class User {
     /**
      * 프로필 정보 업데이트
      */
-    public void updateProfile(String name, String profileImageUrl) {
+    public void updateProfile(String name) {
         if (name != null) {
             this.name = name;
-        }
-        if (profileImageUrl != null) {
-            this.profileImageUrl = profileImageUrl;
         }
         this.updatedAt = LocalDateTime.now();
     }

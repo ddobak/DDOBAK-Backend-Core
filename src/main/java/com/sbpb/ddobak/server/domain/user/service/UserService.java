@@ -74,7 +74,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
             
             // 사용자 이름 업데이트
-            user.updateProfile(request.getName(), null);
+            user.updateProfile(request.getName());
             userRepository.save(user);
             
             log.info("User profile updated successfully for userId: {}", userId);

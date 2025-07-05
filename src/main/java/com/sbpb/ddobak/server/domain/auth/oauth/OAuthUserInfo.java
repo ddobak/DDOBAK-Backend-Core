@@ -27,11 +27,6 @@ public class OAuthUserInfo {
     private final String name;
     
     /**
-     * 프로필 이미지 URL (선택사항)
-     */
-    private final String profileImageUrl;
-    
-    /**
      * OAuth 제공자
      */
     private final OAuthProvider provider;
