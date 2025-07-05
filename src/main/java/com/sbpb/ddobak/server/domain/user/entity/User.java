@@ -35,9 +35,6 @@ public class User {
     @Column(name = "oauth_provider_id")
     private String oauthProviderId;  // OAuth 제공자에서의 사용자 ID
 
-    @Column(name = "email_verified", nullable = false)
-    private Boolean emailVerified;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -55,19 +52,17 @@ public class User {
      */
     public enum UserStatus {
         ACTIVE,    // 활성 상태
-        INACTIVE,  // 비활성 상태
         DELETED    // 삭제된 상태
     }
 
     @Builder
     public User(String email, String name,
-                String oauthProvider, String oauthProviderId, Boolean emailVerified,
+                String oauthProvider, String oauthProviderId,
                 LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime lastLoginAt, Boolean isDeleted) {
         this.email = email;
         this.name = name;
         this.oauthProvider = oauthProvider;
         this.oauthProviderId = oauthProviderId;
-        this.emailVerified = emailVerified;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.lastLoginAt = lastLoginAt;
@@ -86,9 +81,6 @@ public class User {
         if (isDeleted == null) {
             isDeleted = false;
         }
-        if (emailVerified == null) {
-            emailVerified = false;
-        }
     }
 
     @PreUpdate
@@ -98,16 +90,13 @@ public class User {
 
     /**
      * 현재 사용자 상태 반환
-     * isDeleted와 emailVerified 상태를 기반으로 계산
+     * Apple 로그인 사용자는 모두 ACTIVE, 삭제된 경우만 DELETED
      */
     public UserStatus getStatus() {
         if (Boolean.TRUE.equals(isDeleted)) {
             return UserStatus.DELETED;
         }
-        if (Boolean.TRUE.equals(emailVerified)) {
-            return UserStatus.ACTIVE;
-        }
-        return UserStatus.INACTIVE;
+        return UserStatus.ACTIVE;  // Apple 로그인 사용자는 모두 ACTIVE
     }
 
     /**
@@ -141,14 +130,6 @@ public class User {
      */
     public void updateEmail(String email) {
         this.email = email;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * 이메일 검증 완료 처리
-     */
-    public void verifyEmail() {
-        this.emailVerified = true;
         this.updatedAt = LocalDateTime.now();
     }
 }

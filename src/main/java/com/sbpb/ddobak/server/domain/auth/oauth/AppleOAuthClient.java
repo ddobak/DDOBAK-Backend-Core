@@ -34,7 +34,6 @@ public class AppleOAuthClient implements OAuthClient {
             // 클레임에서 사용자 정보 추출
             String providerId = claims.getSubject();  // Apple 사용자 고유 ID
             String email = claims.get("email", String.class);
-            Boolean emailVerified = claims.get("email_verified", Boolean.class);
             
             // 사용자 이름은 별도로 전달되는 경우가 있음 (최초 로그인 시에만)
             String name = extractNameFromClaims(claims);
@@ -44,7 +43,6 @@ public class AppleOAuthClient implements OAuthClient {
                 .email(email)
                 .name(name)
                 .provider(OAuthProvider.APPLE)
-                .emailVerified(emailVerified != null ? emailVerified : false)
                 .build();
                 
         } catch (Exception e) {

@@ -134,7 +134,6 @@ public class AuthServiceImpl implements AuthService {
                 .name(oAuthUserInfo.getName() != null ? oAuthUserInfo.getName() : "Apple User")
                 .oauthProvider("apple")
                 .oauthProviderId(oAuthUserInfo.getProviderId())
-                .emailVerified(oAuthUserInfo.isEmailVerified())
                 .build();
             
             User savedUser = userRepository.save(newUser);
