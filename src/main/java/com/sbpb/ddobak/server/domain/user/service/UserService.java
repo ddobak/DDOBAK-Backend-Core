@@ -97,7 +97,34 @@ public class UserService {
     }
 
     public UserProfileResponse getUserProfile(Long userId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        log.info("Getting user profile: userId={}", userId);
+        
+        try {
+            // 사용자 조회
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+            
+            // 사용자 활성 상태 확인
+            if (Boolean.TRUE.equals(user.getIsDeleted())) {
+                throw new IllegalArgumentException("비활성화된 사용자입니다: " + userId);
+            }
+            
+            log.info("User profile retrieved successfully for userId: {}", userId);
+            
+            return UserProfileResponse.builder()
+                .userId(userId)
+                .email(user.getEmail())
+                .name(user.getName())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .lastLoginAt(user.getLastLoginAt())
+                .build();
+                
+        } catch (Exception e) {
+            log.error("Failed to get user profile: {}", e.getMessage());
+            throw new IllegalArgumentException("사용자 프로필 조회 실패: " + e.getMessage());
+        }
     }
 
     public UserProfileResponse updateUserProfile(Long userId, UserProfileRequest request) {
