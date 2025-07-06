@@ -85,8 +85,8 @@ class ContractControllerTest {
     void getOcrResults_Success() throws Exception {
         // given
         List<OcrContentResponse.HtmlElement> htmlArray = List.of(
-            new OcrContentResponse.HtmlElement("content", "<div>테스트 내용 1</div>", "OCR001", 1001),
-            new OcrContentResponse.HtmlElement("content", "<div>테스트 내용 2</div>", "OCR002", 1002)
+            new OcrContentResponse.HtmlElement("paragraph", "<div>테스트 내용 1</div>", "OCR001", 1001),
+            new OcrContentResponse.HtmlElement("title", "<div>테스트 내용 2</div>", "OCR002", 1002)
         );
         OcrContentResponse response = new OcrContentResponse(2, "<div>테스트 내용 1</div><div>테스트 내용 2</div>", htmlArray);
 
@@ -108,7 +108,7 @@ class ContractControllerTest {
     @DisplayName("OCR 내용 수정 API 성공")
     void updateOcrContent_Success() throws Exception {
         // given
-        OcrUpdateRequest request = new OcrUpdateRequest("OCR001", "<div>수정된 내용</div>");
+        OcrUpdateRequest request = new OcrUpdateRequest("OCR001", "<div>수정된 내용</div>", "paragraph");
 
         // when & then
         mockMvc.perform(patch("/contract/ocr/{contractId}", contractId)
