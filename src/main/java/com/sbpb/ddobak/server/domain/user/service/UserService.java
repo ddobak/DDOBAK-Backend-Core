@@ -97,14 +97,95 @@ public class UserService {
     }
 
     public UserProfileResponse getUserProfile(Long userId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        log.info("Getting user profile: userId={}", userId);
+        
+        try {
+            // 사용자 조회
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+            
+            // 사용자 활성 상태 확인
+            if (Boolean.TRUE.equals(user.getIsDeleted())) {
+                throw new IllegalArgumentException("비활성화된 사용자입니다: " + userId);
+            }
+            
+            log.info("User profile retrieved successfully for userId: {}", userId);
+            
+            return UserProfileResponse.builder()
+                .userId(userId)
+                .email(user.getEmail())
+                .name(user.getName())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .lastLoginAt(user.getLastLoginAt())
+                .build();
+                
+        } catch (Exception e) {
+            log.error("Failed to get user profile: {}", e.getMessage());
+            throw new IllegalArgumentException("사용자 프로필 조회 실패: " + e.getMessage());
+        }
     }
 
+    @Transactional
     public UserProfileResponse updateUserProfile(Long userId, UserProfileRequest request) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        log.info("Updating user profile: userId={}, name={}", userId, request.getName());
+
+        try {
+            // 사용자 조회
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+
+            // 사용자 활성 상태 확인
+            if (Boolean.TRUE.equals(user.getIsDeleted())) {
+                throw new IllegalArgumentException("비활성화된 사용자입니다: " + userId);
+            }
+
+            // 사용자 이름 업데이트
+            user.updateProfile(request.getName());
+            userRepository.save(user);
+
+            log.info("User profile updated successfully for userId: {}", userId);
+
+            return UserProfileResponse.builder()
+                    .userId(userId)
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .status(user.getStatus())
+                    .createdAt(user.getCreatedAt())
+                    .updatedAt(user.getUpdatedAt())
+                    .lastLoginAt(user.getLastLoginAt())
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Failed to update user profile: {}", e.getMessage());
+            throw new IllegalArgumentException("사용자 프로필 수정 실패: " + e.getMessage());
+        }
     }
 
+    @Transactional
     public void withdrawUser(Long userId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        log.info("Withdrawing user: userId={}", userId);
+        
+        try {
+            // 사용자 조회
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+            
+            // 이미 탈퇴한 사용자인지 확인
+            if (Boolean.TRUE.equals(user.getIsDeleted())) {
+                throw new IllegalArgumentException("이미 탈퇴한 사용자입니다: " + userId);
+            }
+            
+            // 소프트 삭제 (isDeleted = true)
+            user.delete();
+            userRepository.save(user);
+            
+            log.info("User withdrawn successfully: userId={}", userId);
+            
+        } catch (Exception e) {
+            log.error("Failed to withdraw user: {}", e.getMessage());
+            throw new IllegalArgumentException("회원 탈퇴 실패: " + e.getMessage());
+        }
     }
 } 

@@ -5,6 +5,7 @@ import com.sbpb.ddobak.server.common.response.SuccessCode;
 import com.sbpb.ddobak.server.domain.auth.dto.AppleLoginRequest;
 import com.sbpb.ddobak.server.domain.auth.dto.AuthResponse;
 import com.sbpb.ddobak.server.domain.auth.service.AuthService;
+import com.sbpb.ddobak.server.domain.auth.service.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     
     private final AuthService authService;
+    private final JwtService jwtService;
     
     /**
      * Apple 로그인
@@ -90,15 +92,32 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Boolean>> validateToken(
         @RequestHeader("Authorization") String authHeader
     ) {
-        String accessToken = authHeader.startsWith("Bearer ") 
-            ? authHeader.substring(7) 
-            : authHeader;
+        log.info("Token validation request received");
         
-        // JWT 토큰 검증 로직은 추후 JwtService에 추가
-        boolean isValid = true; // 임시 구현
-        
-        return ResponseEntity.ok(
-            ApiResponse.success(isValid, SuccessCode.SUCCESS)
-        );
+        try {
+            String accessToken = authHeader.startsWith("Bearer ") 
+                ? authHeader.substring(7) 
+                : authHeader;
+            
+            // 실제 JWT 토큰 검증
+            boolean isValid = jwtService.isTokenValid(accessToken);
+            
+            if (isValid) {
+                Long userId = jwtService.getUserIdFromToken(accessToken);
+                String email = jwtService.getEmailFromToken(accessToken);
+                log.info("Token validation successful for user: {} ({})", email, userId);
+            } else {
+                log.warn("Token validation failed: invalid token");
+            }
+            
+            return ResponseEntity.ok(
+                ApiResponse.success(isValid, SuccessCode.SUCCESS)
+            );
+        } catch (Exception e) {
+            log.error("Token validation failed: {}", e.getMessage());
+            return ResponseEntity.ok(
+                ApiResponse.success(false, SuccessCode.SUCCESS)
+            );
+        }
     }
 } 
