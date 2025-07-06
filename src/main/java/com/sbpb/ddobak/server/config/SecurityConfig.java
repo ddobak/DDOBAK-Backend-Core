@@ -6,11 +6,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
 
 /**
  * Spring Security 설정
@@ -26,8 +21,8 @@ public class SecurityConfig {
             // CSRF 비활성화 (JWT 사용으로 불필요)
             .csrf(csrf -> csrf.disable())
             
-            // CORS 설정
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // CORS 비활성화 (API Gateway에서 처리)
+            .cors(cors -> cors.disable())
             
             // 세션 사용 안함 (JWT 기반 인증)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -60,37 +55,5 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * CORS 설정
-     * 개발 환경에서는 특정 도메인 허용, 운영 환경에서는 실제 도메인만 허용
-     */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // 개발 환경 도메인들 (credentials=true일 때는 *를 사용할 수 없음)
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3000",
-            "http://localhost:3001", 
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:3001"
-        ));
-        
-        // 허용할 HTTP 메서드
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        
-        // 허용할 헤더
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        
-        // 인증 정보 포함 허용
-        configuration.setAllowCredentials(true);
-        
-        // 브라우저가 노출할 수 있는 헤더
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh-Token"));
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        
-        return source;
-    }
 } 
