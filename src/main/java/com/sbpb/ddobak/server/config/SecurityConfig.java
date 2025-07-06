@@ -62,15 +62,19 @@ public class SecurityConfig {
 
     /**
      * CORS 설정
-     * 개발 환경에서는 모든 도메인 허용, 운영 환경에서는 특정 도메인만 허용
+     * 개발 환경에서는 특정 도메인 허용, 운영 환경에서는 실제 도메인만 허용
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // 개발 환경에서는 모든 도메인 허용
-        // 운영 환경에서는 실제 도메인으로 변경 필요
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        // 개발 환경 도메인들 (credentials=true일 때는 *를 사용할 수 없음)
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "http://localhost:3001", 
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:3001"
+        ));
         
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
