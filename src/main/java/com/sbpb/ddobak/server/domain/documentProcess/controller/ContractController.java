@@ -106,8 +106,8 @@ public class ContractController {
      * Authorization 헤더에서 사용자 ID 추출
      * TODO: 실제 JWT 토큰 파싱 로직 구현 필요
      */
-    private String extractUserIdFromToken(String authorization) {
+    private Long extractUserIdFromToken(String authorization) {
         // 임시로 더미 사용자 ID 반환
-        return "user123";
+        return 123456L;
     }
 } 
