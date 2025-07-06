@@ -32,7 +32,7 @@ public class ContractController {
             @RequestHeader("Authorization") String authorization) {
         
         // TODO: Authorization에서 사용자 ID 추출
-        String userId = extractUserIdFromToken(authorization);
+        Long userId = extractUserIdFromToken(authorization);
         
         OcrRequest request = new OcrRequest(files, contractType);
         OcrResponse response = documentProcessService.processOcr(userId, request);
