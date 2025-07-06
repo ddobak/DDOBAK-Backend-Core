@@ -44,6 +44,9 @@ public class SecurityConfig {
                 // Swagger UI 허용 (개발 환경)
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 
+                // 계약서 API 임시 허용 (개발/테스트용)
+                .requestMatchers("/api/contract/**").permitAll()
+                
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
