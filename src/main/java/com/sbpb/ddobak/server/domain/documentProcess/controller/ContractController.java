@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/contract")
+@RequestMapping("/api/contract")
 public class ContractController {
 
     private final DocumentProcessService documentProcessService;
