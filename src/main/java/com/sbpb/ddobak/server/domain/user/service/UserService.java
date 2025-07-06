@@ -163,7 +163,29 @@ public class UserService {
         }
     }
 
+    @Transactional
     public void withdrawUser(Long userId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        log.info("Withdrawing user: userId={}", userId);
+        
+        try {
+            // 사용자 조회
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+            
+            // 이미 탈퇴한 사용자인지 확인
+            if (Boolean.TRUE.equals(user.getIsDeleted())) {
+                throw new IllegalArgumentException("이미 탈퇴한 사용자입니다: " + userId);
+            }
+            
+            // 소프트 삭제 (isDeleted = true)
+            user.delete();
+            userRepository.save(user);
+            
+            log.info("User withdrawn successfully: userId={}", userId);
+            
+        } catch (Exception e) {
+            log.error("Failed to withdraw user: {}", e.getMessage());
+            throw new IllegalArgumentException("회원 탈퇴 실패: " + e.getMessage());
+        }
     }
 } 
