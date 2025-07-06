@@ -24,4 +24,14 @@ public interface OcrContentRepository extends JpaRepository<OcrContent, String> 
      * 계약 ID로 OCR 콘텐츠 개수 조회
      */
     long countByContractId(String contractId);
+
+    /**
+     * 계약 ID와 카테고리로 OCR 콘텐츠 목록 조회 (태그 순서대로)
+     */
+    List<OcrContent> findByContractIdAndCategoryOrderByTagIdx(String contractId, String category);
+
+    /**
+     * 계약 ID와 카테고리로 OCR 콘텐츠 개수 조회
+     */
+    long countByContractIdAndCategory(String contractId, String category);
 } 

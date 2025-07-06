@@ -22,6 +22,10 @@ public class OcrContent {
     @Setter
     private String content;
 
+    @Column(name = "category")
+    @Setter
+    private String category;
+
     @Column(name = "tag_idx")
     @Setter
     private Integer tagIdx;
@@ -31,10 +35,11 @@ public class OcrContent {
     @Setter
     private Contract contract;
 
-    public OcrContent(String id, String contractId, String content, Integer tagIdx) {
+    public OcrContent(String id, String contractId, String content, String category, Integer tagIdx) {
         this.id = id;
         this.contractId = contractId;
         this.content = content;
+        this.category = category;
         this.tagIdx = tagIdx;
     }
 } 

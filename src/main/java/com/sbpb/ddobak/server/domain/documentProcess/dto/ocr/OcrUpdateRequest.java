@@ -13,4 +13,5 @@ public class OcrUpdateRequest {
     
     private String id;
     private String element;
+    private String category;
 } 

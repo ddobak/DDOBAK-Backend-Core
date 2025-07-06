@@ -170,6 +170,7 @@ public class OcrProcessService {
                 IdGenerator.generate(),
                 contractId,
                 element.getHtml(),
+                element.getCategory(),
                 (pageIdx+1) * 1000 + j // tagIdx: 페이지번호*1000 + 요소순서로 정렬
             );
             
@@ -194,9 +195,9 @@ public class OcrProcessService {
         for (OcrContent content : ocrContents) {
             htmlEntire.append(content.getContent());
             htmlArray.add(new OcrContentResponse.HtmlElement(
-                "content", 
+                content.getCategory(), // 실제 category 값 사용
                 content.getContent(), 
-                content.getId(),    // OCR 콘텐츠의 ID 추가
+                content.getId(),
                 content.getTagIdx()
             ));
         }
@@ -220,6 +221,10 @@ public class OcrProcessService {
         }
         
         ocrContent.setContent(request.getElement());
+        // category가 제공된 경우에만 업데이트
+        if (request.getCategory() != null) {
+            ocrContent.setCategory(request.getCategory());
+        }
         ocrContentRepository.save(ocrContent);
     }
     
