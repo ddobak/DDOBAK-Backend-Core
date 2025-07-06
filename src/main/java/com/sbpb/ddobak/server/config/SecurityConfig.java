@@ -6,6 +6,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 /**
  * Spring Security 설정
@@ -21,8 +26,8 @@ public class SecurityConfig {
             // CSRF 비활성화 (JWT 사용으로 불필요)
             .csrf(csrf -> csrf.disable())
             
-            // CORS 비활성화 (API Gateway에서 처리)
-            .cors(cors -> cors.disable())
+            // CORS 활성화 (API Gateway + Lambda Proxy에서 필요)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             
             // 세션 사용 안함 (JWT 기반 인증)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -39,9 +44,6 @@ public class SecurityConfig {
                 // Swagger UI 허용 (개발 환경)
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 
-                // 개발/테스트용으로 모든 API 임시 허용 (운영 환경에서는 제거 필요)
-                .requestMatchers("/api/**").permitAll()
-                
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
@@ -55,5 +57,53 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * CORS 설정 - API Gateway + Lambda Proxy 통합에서 필요
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // 특정 도메인 허용 (운영환경에서는 실제 도메인으로 변경)
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "http://localhost:3001"
+        ));
+        
+        // 허용할 HTTP 메서드
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"
+        ));
+        
+        // 허용할 요청 헤더 (명시적 지정)
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type", 
+            "Accept",
+            "Origin",
+            "X-Requested-With",
+            "X-Request-Id",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
+        
+        // 브라우저가 읽을 수 있는 응답 헤더
+        configuration.setExposedHeaders(Arrays.asList(
+            "Authorization", 
+            "Refresh-Token", 
+            "X-Request-Id",
+            "Content-Disposition"
+        ));
+        
+        // 인증 정보 포함 허용
+        configuration.setAllowCredentials(true);
+        
+        // preflight 요청 캐시 시간
+        configuration.setMaxAge(3600L);
 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
+    }
 } 
