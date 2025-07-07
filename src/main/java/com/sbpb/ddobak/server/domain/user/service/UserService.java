@@ -216,8 +216,8 @@ public class UserService {
                 throw new IllegalArgumentException("비활성화된 사용자입니다: " + userId);
             }
             
-            // 사용자 ID로 최신 분석 결과들 조회
-            List<ContractAnalysis> analyses = contractAnalysisRepository.findLatestAnalysesByUserId(userId);
+            // 사용자 ID로 분석 결과들 조회
+            List<ContractAnalysis> analyses = contractAnalysisRepository.findAnalysesByUserId(userId);
             
             // requestCount 제한 적용
             List<ContractAnalysis> limitedAnalyses = analyses.stream()
