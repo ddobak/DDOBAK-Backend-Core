@@ -31,6 +31,6 @@ public interface ContractRepository extends JpaRepository<Contract, String> {
     /**
      * 계약서와 분석 결과를 함께 조회
      */
-    @Query("SELECT c FROM Contract c LEFT JOIN FETCH c.contractAnalyses WHERE c.id = :contractId")
-    Optional<Contract> findByIdWithAnalyses(@Param("contractId") String contractId);
+    @Query("SELECT c FROM Contract c LEFT JOIN FETCH c.contractAnalysis WHERE c.id = :contractId")
+    Optional<Contract> findByIdWithAnalysis(@Param("contractId") String contractId);
 } 
