@@ -8,6 +8,7 @@ import com.sbpb.ddobak.server.domain.documentProcess.dto.lambda.OcrLambdaPayload
 import com.sbpb.ddobak.server.domain.documentProcess.dto.lambda.OcrLambdaResponse;
 import com.sbpb.ddobak.server.domain.documentProcess.dto.ocr.*;
 import com.sbpb.ddobak.server.domain.documentProcess.entity.Contract;
+import com.sbpb.ddobak.server.domain.documentProcess.entity.ContractType;
 import com.sbpb.ddobak.server.domain.documentProcess.entity.OcrContent;
 import com.sbpb.ddobak.server.domain.documentProcess.repository.ContractRepository;
 import com.sbpb.ddobak.server.domain.documentProcess.repository.OcrContentRepository;
@@ -63,7 +64,9 @@ public class OcrProcessService {
         String contractId = IdGenerator.generate();
         String s3KeyPrefix = "contracts/" + contractId + "/";
         
-        Contract contract = new Contract(contractId, userId, s3KeyPrefix, null, request.getContractType());
+        // String을 ContractType으로 변환
+        ContractType contractType = parseContractType(request.getContractType());
+        Contract contract = new Contract(contractId, userId, s3KeyPrefix, null, contractType);
         contractRepository.save(contract);
 
         try {
@@ -245,5 +248,21 @@ public class OcrProcessService {
         public int getPageIdx() { return pageIdx; }
         public List<OcrLambdaResponse.HtmlElement> getHtmlElements() { return htmlElements; }
         public boolean isSuccess() { return success; }
+    }
+    
+    /**
+     * String을 ContractType으로 변환
+     */
+    private ContractType parseContractType(String contractTypeStr) {
+        if (contractTypeStr == null) {
+            return null;
+        }
+        
+        try {
+            return ContractType.valueOf(contractTypeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.warn("Unknown contract type: {}, using null", contractTypeStr);
+            return null;
+        }
     }
 } 

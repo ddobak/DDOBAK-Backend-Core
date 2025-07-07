@@ -251,7 +251,7 @@ public class UserService {
             analysis.getContract().getTitle() : "계약서 분석 중...";
         
         String contractType = analysis.getContract().getContractType() != null ? 
-            analysis.getContract().getContractType() : "general";
+            analysis.getContract().getContractType().name().toLowerCase() : "general";
         
         // 분석 상태 (status 또는 processStatus 사용)
         String analysisStatus = analysis.getProcessStatus() != null ? 
