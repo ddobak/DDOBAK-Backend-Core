@@ -70,7 +70,8 @@ public class SecurityConfig {
         // 특정 도메인 허용 (운영환경에서는 실제 도메인으로 변경)
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
-            "http://localhost:3001"
+            "http://localhost:3001",
+            "https://ddobak-frontend-webview.vercel.app"
         ));
         
         // 허용할 HTTP 메서드
