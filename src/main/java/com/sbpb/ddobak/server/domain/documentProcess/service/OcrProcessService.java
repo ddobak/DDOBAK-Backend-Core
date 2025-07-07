@@ -63,7 +63,7 @@ public class OcrProcessService {
         String contractId = IdGenerator.generate();
         String s3KeyPrefix = "contracts/" + contractId + "/";
         
-        Contract contract = new Contract(contractId, userId, s3KeyPrefix);
+        Contract contract = new Contract(contractId, userId, s3KeyPrefix, null, request.getContractType());
         contractRepository.save(contract);
 
         try {

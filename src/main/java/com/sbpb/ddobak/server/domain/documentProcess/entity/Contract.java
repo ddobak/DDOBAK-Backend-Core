@@ -30,6 +30,15 @@ public class Contract {
     @Setter
     private String imgS3Key;
 
+    @Column(name = "title")
+    @Setter
+    private String title;
+
+    @Column(name = "contract_type")
+    @Enumerated(EnumType.STRING)
+    @Setter
+    private ContractType contractType;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -48,6 +57,14 @@ public class Contract {
         this.id = id;
         this.userId = userId;
         this.imgS3Key = imgS3Key;
+    }
+
+    public Contract(String id, Long userId, String imgS3Key, String title, ContractType contractType) {
+        this.id = id;
+        this.userId = userId;
+        this.imgS3Key = imgS3Key;
+        this.title = title;
+        this.contractType = contractType;
     }
 
     public void addOcrContent(OcrContent ocrContent) {

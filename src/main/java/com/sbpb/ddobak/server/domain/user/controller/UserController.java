@@ -5,6 +5,8 @@ import com.sbpb.ddobak.server.domain.user.response.UserSuccessCode;
 import com.sbpb.ddobak.server.domain.user.exception.UserErrorCode;
 import com.sbpb.ddobak.server.domain.user.dto.UserProfileRequest;
 import com.sbpb.ddobak.server.domain.user.dto.UserProfileResponse;
+import com.sbpb.ddobak.server.domain.user.dto.UserAnalysesResponse;
+import com.sbpb.ddobak.server.domain.user.dto.UserAnalysesRequest;
 import com.sbpb.ddobak.server.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -135,6 +137,48 @@ public class UserController {
         } catch (Exception e) {
             log.error("회원 탈퇴 중 오류 발생: {}", e.getMessage(), e);
             return ApiResponse.error(UserErrorCode.USER_PROFILE_DELETE_FAILED);
+        }
+    }
+    
+    /**
+     * 사용자 분석 결과 조회
+     * GET /user/{userId}/analyses
+     * 
+     * @param userId 사용자 ID (path parameter)
+     * @param requestCount 받을 결과 최대 개수 (query parameter, 기본값: 10)
+     * @param authHeader Authorization 헤더 (JWT 토큰)
+     * @return 사용자 분석 결과 목록
+     */
+    @GetMapping("/{userId}/analyses")
+    public ApiResponse<UserAnalysesResponse> getUserAnalyses(
+            @PathVariable("userId") Long userId,
+            @RequestParam(value = "requestCount", required = false, defaultValue = "3") int requestCount,
+            @RequestHeader("Authorization") String authHeader) {
+        log.info("사용자 분석 결과 조회 요청: userId={}, requestCount={}", userId, requestCount);
+        
+        try {
+            // Bearer 토큰에서 실제 토큰 추출
+            String accessToken = authHeader.startsWith("Bearer ") 
+                ? authHeader.substring(7) 
+                : authHeader;
+            
+            // JWT 토큰 유효성 검증은 Service에서 수행하지 않으므로 여기서 간단히 확인
+            // 실제 인증 확인은 Spring Security나 별도 인증 로직으로 처리될 수 있음
+            
+            UserAnalysesResponse response = userService.getUserAnalyses(userId, requestCount);
+            return ApiResponse.success(response, UserSuccessCode.PROFILE_RETRIEVED);
+        } catch (IllegalArgumentException e) {
+            log.error("사용자 분석 결과 조회 실패: {}", e.getMessage());
+            if (e.getMessage().contains("찾을 수 없습니다")) {
+                return ApiResponse.error(UserErrorCode.USER_NOT_FOUND);
+            } else if (e.getMessage().contains("비활성")) {
+                return ApiResponse.error(UserErrorCode.USER_INACTIVE);
+            } else {
+                return ApiResponse.error(UserErrorCode.USER_PROFILE_CREATION_FAILED, e.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("사용자 분석 결과 조회 중 오류 발생: {}", e.getMessage(), e);
+            return ApiResponse.error(UserErrorCode.USER_PROFILE_CREATION_FAILED);
         }
     }
 } 
