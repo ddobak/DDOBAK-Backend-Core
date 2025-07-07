@@ -7,12 +7,21 @@ import com.sbpb.ddobak.server.domain.user.dto.CreateUserRequest;
 import com.sbpb.ddobak.server.domain.user.dto.UserProfileRequest;
 import com.sbpb.ddobak.server.domain.user.dto.UserProfileResponse;
 import com.sbpb.ddobak.server.domain.user.dto.UserResponse;
+import com.sbpb.ddobak.server.domain.user.dto.UserAnalysesRequest;
+import com.sbpb.ddobak.server.domain.user.dto.UserAnalysesResponse;
 import com.sbpb.ddobak.server.domain.user.entity.User;
 import com.sbpb.ddobak.server.domain.user.repository.UserRepository;
+import com.sbpb.ddobak.server.domain.documentProcess.entity.ContractAnalysis;
+import com.sbpb.ddobak.server.domain.documentProcess.repository.ContractAnalysisRepository;
+import com.sbpb.ddobak.server.domain.documentProcess.repository.ToxicClauseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 사용자 서비스
@@ -25,6 +34,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final ContractAnalysisRepository contractAnalysisRepository;
+    private final ToxicClauseRepository toxicClauseRepository;
 
     /**
      * 사용자 생성 (테스트용)
@@ -187,5 +198,78 @@ public class UserService {
             log.error("Failed to withdraw user: {}", e.getMessage());
             throw new IllegalArgumentException("회원 탈퇴 실패: " + e.getMessage());
         }
+    }
+    
+    /**
+     * 사용자 분석 결과 조회
+     */
+    public UserAnalysesResponse getUserAnalyses(Long userId, int requestCount) {
+        log.info("Getting user analyses: userId={}, requestCount={}", userId, requestCount);
+        
+        try {
+            // 사용자 존재 확인
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+            
+            // 사용자 활성 상태 확인
+            if (Boolean.TRUE.equals(user.getIsDeleted())) {
+                throw new IllegalArgumentException("비활성화된 사용자입니다: " + userId);
+            }
+            
+            // 사용자 ID로 최신 분석 결과들 조회
+            List<ContractAnalysis> analyses = contractAnalysisRepository.findLatestAnalysesByUserId(userId);
+            
+            // requestCount 제한 적용
+            List<ContractAnalysis> limitedAnalyses = analyses.stream()
+                .limit(requestCount)
+                .collect(Collectors.toList());
+            
+            // ContractAnalysisDto로 변환
+            List<UserAnalysesResponse.ContractAnalysisDto> contractDtos = limitedAnalyses.stream()
+                .map(this::convertToContractAnalysisDto)
+                .collect(Collectors.toList());
+            
+            log.info("User analyses retrieved successfully: userId={}, count={}", userId, contractDtos.size());
+            
+            return new UserAnalysesResponse(contractDtos.size(), contractDtos);
+            
+        } catch (Exception e) {
+            log.error("Failed to get user analyses: {}", e.getMessage());
+            throw new IllegalArgumentException("사용자 분석 결과 조회 실패: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * ContractAnalysis를 ContractAnalysisDto로 변환
+     */
+    private UserAnalysesResponse.ContractAnalysisDto convertToContractAnalysisDto(ContractAnalysis analysis) {
+        // 독소 조항 개수 조회
+        long toxicCount = toxicClauseRepository.countByAnalysisId(analysis.getId());
+        
+        // Contract에서 title과 contractType 가져오기 (Lambda에서 저장된 값)
+        String contractTitle = analysis.getContract().getTitle() != null ? 
+            analysis.getContract().getTitle() : "계약서 분석 중...";
+        
+        String contractType = analysis.getContract().getContractType() != null ? 
+            analysis.getContract().getContractType() : "general";
+        
+        // 분석 상태 (status 또는 processStatus 사용)
+        String analysisStatus = analysis.getProcessStatus() != null ? 
+            analysis.getProcessStatus().name().toLowerCase() : 
+            (analysis.getStatus() != null ? analysis.getStatus() : "unknown");
+        
+        // 분석 날짜 포맷
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String analysisDate = analysis.getCreatedAt().format(formatter);
+        
+        return new UserAnalysesResponse.ContractAnalysisDto(
+            analysis.getContractId(),
+            contractTitle,
+            contractType,
+            analysisStatus,
+            analysis.getId(),
+            (int) toxicCount,
+            analysisDate
+        );
     }
 } 

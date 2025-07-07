@@ -32,4 +32,14 @@ public interface ContractAnalysisRepository extends JpaRepository<ContractAnalys
      * 계약 ID로 최신 분석 결과 조회
      */
     Optional<ContractAnalysis> findFirstByContractIdOrderByCreatedAtDesc(String contractId);
+    
+    /**
+     * 사용자 ID로 최신 분석 결과들 조회 (Contract 정보 포함)
+     */
+    @Query("SELECT ca FROM ContractAnalysis ca " +
+           "JOIN FETCH ca.contract c " +
+           "WHERE c.userId = :userId " +
+           "AND ca.createdAt = (SELECT MAX(ca2.createdAt) FROM ContractAnalysis ca2 WHERE ca2.contractId = ca.contractId) " +
+           "ORDER BY ca.createdAt DESC")
+    List<ContractAnalysis> findLatestAnalysesByUserId(@Param("userId") Long userId);
 } 
