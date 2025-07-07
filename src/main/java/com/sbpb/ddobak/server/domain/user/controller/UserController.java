@@ -8,6 +8,7 @@ import com.sbpb.ddobak.server.domain.user.dto.UserProfileResponse;
 import com.sbpb.ddobak.server.domain.user.dto.UserAnalysesResponse;
 import com.sbpb.ddobak.server.domain.user.dto.UserAnalysesRequest;
 import com.sbpb.ddobak.server.domain.user.service.UserService;
+import com.sbpb.ddobak.server.domain.auth.service.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final JwtService jwtService;
 
     /**
      * 기본 정보 입력
@@ -142,28 +144,21 @@ public class UserController {
     
     /**
      * 사용자 분석 결과 조회
-     * GET /user/{userId}/analyses
+     * GET /user/analyses
      * 
-     * @param userId 사용자 ID (path parameter)
-     * @param requestCount 받을 결과 최대 개수 (query parameter, 기본값: 10)
+     * @param requestCount 받을 결과 최대 개수 (query parameter, 기본값: 3)
      * @param authHeader Authorization 헤더 (JWT 토큰)
      * @return 사용자 분석 결과 목록
      */
-    @GetMapping("/{userId}/analyses")
+    @GetMapping("/analyses")
     public ApiResponse<UserAnalysesResponse> getUserAnalyses(
-            @PathVariable("userId") Long userId,
             @RequestParam(value = "requestCount", required = false, defaultValue = "3") int requestCount,
             @RequestHeader("Authorization") String authHeader) {
-        log.info("사용자 분석 결과 조회 요청: userId={}, requestCount={}", userId, requestCount);
         
         try {
-            // Bearer 토큰에서 실제 토큰 추출
-            String accessToken = authHeader.startsWith("Bearer ") 
-                ? authHeader.substring(7) 
-                : authHeader;
-            
-            // JWT 토큰 유효성 검증은 Service에서 수행하지 않으므로 여기서 간단히 확인
-            // 실제 인증 확인은 Spring Security나 별도 인증 로직으로 처리될 수 있음
+            // JWT 토큰에서 사용자 ID 추출
+            Long userId = extractUserIdFromToken(authHeader);
+            log.info("사용자 분석 결과 조회 요청: userId={}, requestCount={}", userId, requestCount);
             
             UserAnalysesResponse response = userService.getUserAnalyses(userId, requestCount);
             return ApiResponse.success(response, UserSuccessCode.PROFILE_RETRIEVED);
@@ -179,6 +174,35 @@ public class UserController {
         } catch (Exception e) {
             log.error("사용자 분석 결과 조회 중 오류 발생: {}", e.getMessage(), e);
             return ApiResponse.error(UserErrorCode.USER_PROFILE_CREATION_FAILED);
+        }
+    }
+    
+    /**
+     * Authorization 헤더에서 사용자 ID 추출
+     */
+    private Long extractUserIdFromToken(String authorization) {
+        log.debug("JWT 토큰에서 사용자 ID 추출 시작");
+        
+        try {
+            // Bearer 토큰에서 실제 토큰 추출
+            String accessToken = authorization.startsWith("Bearer ") 
+                ? authorization.substring(7) 
+                : authorization;
+            
+            // JWT 토큰 유효성 검증
+            if (!jwtService.isTokenValid(accessToken)) {
+                log.error("유효하지 않은 JWT 토큰입니다.");
+                throw new IllegalArgumentException("유효하지 않은 JWT 토큰입니다.");
+            }
+            
+            // JWT 토큰에서 사용자 ID 추출
+            Long userId = jwtService.getUserIdFromToken(accessToken);
+            log.debug("JWT 토큰에서 사용자 ID 추출 완료: {}", userId);
+            
+            return userId;
+        } catch (Exception e) {
+            log.error("JWT 토큰 파싱 중 오류 발생: {}", e.getMessage());
+            throw new IllegalArgumentException("JWT 토큰 파싱 실패: " + e.getMessage());
         }
     }
 } 
