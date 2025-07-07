@@ -13,6 +13,11 @@ import java.util.Optional;
 public interface ContractAnalysisRepository extends JpaRepository<ContractAnalysis, String> {
 
     /**
+     * 계약 ID로 분석 결과 조회 (단일)
+     */
+    ContractAnalysis findByContractId(String contractId);
+
+    /**
      * 계약 ID로 분석 결과 목록 조회 (최신순)
      */
     List<ContractAnalysis> findByContractIdOrderByCreatedAtDesc(String contractId);

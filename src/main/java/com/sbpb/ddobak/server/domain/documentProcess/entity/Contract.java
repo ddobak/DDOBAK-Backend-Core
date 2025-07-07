@@ -50,8 +50,8 @@ public class Contract {
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OcrContent> ocrContents = new ArrayList<>();
 
-    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ContractAnalysis> contractAnalyses = new ArrayList<>();
+    @OneToOne(mappedBy = "contract", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ContractAnalysis contractAnalysis;
 
     public Contract(String id, Long userId, String imgS3Key) {
         this.id = id;
@@ -72,8 +72,10 @@ public class Contract {
         ocrContent.setContract(this);
     }
 
-    public void addContractAnalysis(ContractAnalysis contractAnalysis) {
-        this.contractAnalyses.add(contractAnalysis);
-        contractAnalysis.setContract(this);
+    public void setContractAnalysis(ContractAnalysis contractAnalysis) {
+        this.contractAnalysis = contractAnalysis;
+        if (contractAnalysis != null) {
+            contractAnalysis.setContract(this);
+        }
     }
 } 

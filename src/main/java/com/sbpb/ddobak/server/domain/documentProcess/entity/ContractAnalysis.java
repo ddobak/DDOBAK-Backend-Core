@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "contract_analyses")
+@Table(name = "contract_analyses", uniqueConstraints = {
+    @UniqueConstraint(columnNames = "contract_id")
+})
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -59,7 +61,7 @@ public class ContractAnalysis {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contract_id", insertable = false, updatable = false)
     @Setter
     private Contract contract;

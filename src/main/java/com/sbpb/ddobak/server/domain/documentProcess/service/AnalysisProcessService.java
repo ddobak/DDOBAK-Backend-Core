@@ -49,7 +49,13 @@ public class AnalysisProcessService {
      * 분석 요청
      */
     public AnalysisResponse requestAnalysis(AnalysisRequest request) {
-        // 1. 분석 레코드 생성
+        // 1. 기존 분석 존재 여부 확인
+        ContractAnalysis existingAnalysis = contractAnalysisRepository.findByContractId(request.getContractId());
+        if (existingAnalysis != null) {
+            return new AnalysisResponse(existingAnalysis.getId());
+        }
+        
+        // 2. 분석 레코드 생성
         String analysisId = IdGenerator.generate();
         ContractAnalysis analysis = new ContractAnalysis(
             analysisId, 
@@ -60,10 +66,10 @@ public class AnalysisProcessService {
         contractAnalysisRepository.save(analysis);
 
         try {
-            // 2. OCR 결과 조회
+            // 3. OCR 결과 조회
             List<OcrContent> ocrContents = ocrContentRepository.findByContractIdOrderByTagIdx(request.getContractId());
             
-            // 3. Analysis Lambda 비동기 호출
+            // 4. Analysis Lambda 비동기 호출
             List<String> contractTexts = ocrContents.stream()
                 .map(OcrContent::getContent)
                 .collect(Collectors.toList());
