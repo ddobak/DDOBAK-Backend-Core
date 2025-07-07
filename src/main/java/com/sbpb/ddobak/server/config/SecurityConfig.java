@@ -47,6 +47,9 @@ public class SecurityConfig {
                 // 계약서 API 임시 허용 (개발/테스트용)
                 .requestMatchers("/api/contract/**").permitAll()
                 
+                // 사용자 API 임시 허용 (개발/테스트용)
+                .requestMatchers("/api/user/**").permitAll()
+                
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
