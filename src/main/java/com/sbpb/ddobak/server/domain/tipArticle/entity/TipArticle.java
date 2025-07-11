@@ -38,6 +38,9 @@ public class TipArticle {
     @Column(name = "tags", columnDefinition = "TEXT[]")
     private List<String> tags;
 
+    @Column(name = "url")
+    private String url;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -45,11 +48,12 @@ public class TipArticle {
     private LocalDateTime updatedAt;
 
     @Builder
-    public TipArticle(String title, String summary, String content, List<String> tags) {
+    public TipArticle(String title, String summary, String content, List<String> tags, String url) {
         this.title = title;
         this.summary = summary;
         this.content = content;
         this.tags = tags;
+        this.url = url;
     }
 
     @PrePersist
