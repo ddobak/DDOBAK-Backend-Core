@@ -55,3 +55,11 @@ jobs:
           ps aux | grep java || true
           
           echo "=== Deployment Complete ===" 
+          
+          # JAR 파일 존재 여부 확인
+          echo "=== Checking JAR File ==="
+          ls -lh build/libs/
+
+          # 로그 출력
+          echo "=== Last 20 lines of app.log ==="
+          tail -n 20 app.log || true
