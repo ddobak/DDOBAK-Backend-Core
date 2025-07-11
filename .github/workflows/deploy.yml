@@ -18,6 +18,8 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         port: ${{ secrets.EC2_PORT }}
         script: |
+          set -e
+          
           # 프로젝트 디렉토리로 이동
           cd DDOBAK-Backend-Core
           
@@ -43,7 +45,8 @@ jobs:
           
           # JAR 생성 (테스트 없이)
           echo "=== Building JAR ==="
-          ./gradlew clean bootJar
+          chmod +x ./gradlew
+          ./gradlew clean bootJar --stacktrace --info
           
           # 메모리 제한으로 실행
           echo "=== Starting Application ==="
