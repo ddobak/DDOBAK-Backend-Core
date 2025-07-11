@@ -5,6 +5,9 @@ on:
     branches:
       - dev
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,13 +22,17 @@ jobs:
         port: ${{ secrets.EC2_PORT }}
         script: |
           set -e
-          echo "User: $(whoami)"
-          echo "Working dir: $(pwd)"
-          echo "Java version:"
-          java -version
-          
-          # 프로젝트 디렉토리로 이동
           cd /home/ec2-user/DDOBAK-Backend-Core
+          
+          echo "=== 현재 작업 디렉토리 및 파일 확인 ==="
+          pwd
+          ls -al
+          
+          echo "=== .env 내용 확인 ==="
+          cat .env
+          
+          echo "=== 환경 변수 출력 ==="
+          env
           
           # 현재 Git 코드와 실행 중인 코드가 같은지 확인
           echo "=== Git Status ==="
@@ -39,8 +46,6 @@ jobs:
           # 현재 실행중인 프로세스 종료
           echo "=== Stopping Java Process ==="
           pkill -f java || true
-          
-          # 잠시 대기 (프로세스 종료 완료 대기)
           sleep 5
           
           # 현재 실행중인 자바 프로세스 확인
