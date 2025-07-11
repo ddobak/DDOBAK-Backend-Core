@@ -19,6 +19,10 @@ jobs:
         port: ${{ secrets.EC2_PORT }}
         script: |
           set -e
+          echo "User: $(whoami)"
+          echo "Working dir: $(pwd)"
+          echo "Java version:"
+          java -version
           
           # 프로젝트 디렉토리로 이동
           cd /home/ec2-user/DDOBAK-Backend-Core
