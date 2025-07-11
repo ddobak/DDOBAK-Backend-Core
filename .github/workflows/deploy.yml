@@ -21,7 +21,7 @@ jobs:
           set -e
           
           # 프로젝트 디렉토리로 이동
-          cd DDOBAK-Backend-Core
+          cd /home/ec2-user/DDOBAK-Backend-Core
           
           # 현재 Git 코드와 실행 중인 코드가 같은지 확인
           echo "=== Git Status ==="
@@ -46,7 +46,7 @@ jobs:
           # JAR 생성 (테스트 없이)
           echo "=== Building JAR ==="
           chmod +x ./gradlew
-          ./gradlew clean bootJar --stacktrace --info
+          ./gradlew clean bootJar
           
           # 메모리 제한으로 실행
           echo "=== Starting Application ==="
@@ -58,11 +58,5 @@ jobs:
           ps aux | grep java || true
           
           echo "=== Deployment Complete ===" 
-          
-          # JAR 파일 존재 여부 확인
-          echo "=== Checking JAR File ==="
           ls -lh build/libs/
-
-          # 로그 출력
-          echo "=== Last 20 lines of app.log ==="
-          tail -n 20 app.log || true
+          tail -n 50 /home/ec2-user/DDOBAK-Backend-Core/app.log
