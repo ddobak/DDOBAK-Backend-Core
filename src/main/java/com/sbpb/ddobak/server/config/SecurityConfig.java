@@ -50,6 +50,9 @@ public class SecurityConfig {
                 // 사용자 API 임시 허용 (개발/테스트용)
                 .requestMatchers("/api/user/**").permitAll()
                 
+                // 꿀팁 아티클 API 공개 허용 (공개 API)
+                .requestMatchers("/api/tips/**").permitAll()
+                
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
