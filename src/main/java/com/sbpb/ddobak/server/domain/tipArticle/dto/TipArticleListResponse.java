@@ -18,6 +18,7 @@ public class TipArticleListResponse {
     private String title;
     private String summary;
     private List<String> tags;
+    private String url;
 
     /**
      * TipArticle 엔티티를 TipArticleListResponse로 변환
@@ -28,6 +29,7 @@ public class TipArticleListResponse {
                 .title(tipArticle.getTitle())
                 .summary(tipArticle.getSummary())
                 .tags(tipArticle.getTags())
+                .url(tipArticle.getUrl())
                 .build();
     }
 } 

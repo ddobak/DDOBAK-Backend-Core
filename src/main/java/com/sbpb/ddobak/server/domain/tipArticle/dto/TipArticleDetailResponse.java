@@ -19,6 +19,7 @@ public class TipArticleDetailResponse {
     private String summary;
     private String content;
     private List<String> tags;
+    private String url;
 
     /**
      * TipArticle 엔티티를 TipArticleDetailResponse로 변환
@@ -30,6 +31,7 @@ public class TipArticleDetailResponse {
                 .summary(tipArticle.getSummary())
                 .content(tipArticle.getContent())
                 .tags(tipArticle.getTags())
+                .url(tipArticle.getUrl())
                 .build();
     }
 } 
