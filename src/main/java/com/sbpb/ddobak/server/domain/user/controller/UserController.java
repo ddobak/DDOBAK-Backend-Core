@@ -152,7 +152,7 @@ public class UserController {
      */
     @GetMapping("/analyses")
     public ApiResponse<UserAnalysesResponse> getUserAnalyses(
-            @RequestParam(value = "requestCount", required = false, defaultValue = "3") int requestCount,
+            @RequestParam(value = "requestCount", required = false, defaultValue = "1000") int requestCount,
             @RequestHeader("Authorization") String authHeader) {
         
         try {
