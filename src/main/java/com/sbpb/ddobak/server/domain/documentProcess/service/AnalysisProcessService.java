@@ -119,7 +119,7 @@ public class AnalysisProcessService {
         List<AnalysisResultResponse.ToxicClauseDto> toxics = new ArrayList<>();
         for (ToxicClause toxicClause : analysis.getToxicClauses()) {
             toxics.add(new AnalysisResultResponse.ToxicClauseDto(
-                "독소조항", // title - 실제로는 조항 유형에 따라 다를 수 있음
+                toxicClause.getTitle(),
                 toxicClause.getClause(),
                 toxicClause.getReason(),
                 toxicClause.getReasonReference(),
