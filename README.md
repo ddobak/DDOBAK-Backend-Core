@@ -134,10 +134,6 @@ Closes #12
 
 ## 📚 개발 규칙
 
-### 🎯 Cursor Rules
-Cursor 활용성 극대화를 위해 `.cursor/rules/` 폴더에 rule들을 구성했습니다.  
-프로젝트를 진행하면서, 필요 시 rule은 계속해서 수정될 수 있습니다.
-
 ### 📖 문서 구조
 ```
 docs/
