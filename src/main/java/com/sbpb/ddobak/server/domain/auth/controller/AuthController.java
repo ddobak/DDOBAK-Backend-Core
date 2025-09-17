@@ -3,6 +3,7 @@ package com.sbpb.ddobak.server.domain.auth.controller;
 import com.sbpb.ddobak.server.common.response.ApiResponse;
 import com.sbpb.ddobak.server.common.response.SuccessCode;
 import com.sbpb.ddobak.server.domain.auth.dto.AppleLoginRequest;
+import com.sbpb.ddobak.server.domain.auth.dto.AppleTokenVerificationResponse;
 import com.sbpb.ddobak.server.domain.auth.dto.AuthResponse;
 import com.sbpb.ddobak.server.domain.auth.service.AuthService;
 import com.sbpb.ddobak.server.domain.auth.service.JwtService;
@@ -119,5 +120,32 @@ public class AuthController {
                 ApiResponse.success(false, SuccessCode.SUCCESS)
             );
         }
+    }
+    
+    /**
+     * Apple Identity Token 검증 (테스트용)
+     * 애플로그인 연동 테스트를 위함.
+     * 토큰 검증만 수행하고 실제 사용자 생성이나 로그인은 하지 않음.
+     * @param request Apple 로그인 요청 (Identity Token 포함)
+     * @return 토큰 검증 결과와 토큰에서 추출한 정보
+     */
+    @PostMapping("/apple/verify")
+    public ResponseEntity<ApiResponse<AppleTokenVerificationResponse>> verifyAppleToken(
+        @Valid @RequestBody AppleLoginRequest request
+    ) {
+        log.info("Apple token verification request received for testing");
+        
+        AppleTokenVerificationResponse response = authService.verifyAppleToken(request);
+        
+        if (response.isValid()) {
+            log.info("Apple token verification successful for user: {} ({})", 
+                response.getEmail(), response.getUserId());
+        } else {
+            log.warn("Apple token verification failed: {}", response.getErrorMessage());
+        }
+        
+        return ResponseEntity.ok(
+            ApiResponse.success(response, SuccessCode.SUCCESS)
+        );
     }
 } 

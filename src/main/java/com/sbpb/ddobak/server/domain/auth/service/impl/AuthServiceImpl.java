@@ -1,6 +1,7 @@
 package com.sbpb.ddobak.server.domain.auth.service.impl;
 
 import com.sbpb.ddobak.server.domain.auth.dto.AppleLoginRequest;
+import com.sbpb.ddobak.server.domain.auth.dto.AppleTokenVerificationResponse;
 import com.sbpb.ddobak.server.domain.auth.dto.AuthResponse;
 import com.sbpb.ddobak.server.domain.auth.oauth.AppleOAuthClient;
 import com.sbpb.ddobak.server.domain.auth.oauth.OAuthUserInfo;
@@ -8,12 +9,14 @@ import com.sbpb.ddobak.server.domain.auth.service.AuthService;
 import com.sbpb.ddobak.server.domain.auth.service.JwtService;
 import com.sbpb.ddobak.server.domain.user.entity.User;
 import com.sbpb.ddobak.server.domain.user.repository.UserRepository;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -107,6 +110,40 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             log.warn("Logout processing failed: {}", e.getMessage());
             // 로그아웃은 실패해도 클라이언트에서 토큰을 삭제하면 됨
+        }
+    }
+    
+    @Override
+    public AppleTokenVerificationResponse verifyAppleToken(AppleLoginRequest request) {
+        try {
+            log.info("Verifying Apple Identity Token for test purposes");
+            
+            // Apple Identity Token 검증 및 파싱 (AppleJwtUtils를 통해 직접 접근)
+            Claims claims = appleOAuthClient.getAppleJwtUtils().parseAndValidateToken(request.getIdentityToken());
+            
+            // 검증 성공 응답 생성
+            return AppleTokenVerificationResponse.builder()
+                .isValid(true)
+                .userId(claims.getSubject())
+                .email(claims.get("email", String.class))
+                .emailVerified(claims.get("email_verified", Boolean.class))
+                .issuer(claims.getIssuer())
+                .audience(claims.getAudience() != null ? claims.getAudience().toString() : null)
+                .issuedAt(claims.getIssuedAt())
+                .expiresAt(claims.getExpiration())
+                .verifiedAt(new Date())
+                .errorMessage(null)
+                .build();
+                
+        } catch (Exception e) {
+            log.error("Apple token verification failed: {}", e.getMessage(), e);
+            
+            // 검증 실패 응답 생성
+            return AppleTokenVerificationResponse.builder()
+                .isValid(false)
+                .verifiedAt(new Date())
+                .errorMessage(e.getMessage())
+                .build();
         }
     }
     

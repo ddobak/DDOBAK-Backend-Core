@@ -2,6 +2,7 @@ package com.sbpb.ddobak.server.domain.auth.oauth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import java.util.Map;
 @Slf4j
 public class AppleOAuthClient implements OAuthClient {
     
+    @Getter
     private final AppleJwtUtils appleJwtUtils;
     private final ObjectMapper objectMapper;
     

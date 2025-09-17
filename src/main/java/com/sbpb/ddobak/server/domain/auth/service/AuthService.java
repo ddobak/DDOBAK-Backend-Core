@@ -1,6 +1,7 @@
 package com.sbpb.ddobak.server.domain.auth.service;
 
 import com.sbpb.ddobak.server.domain.auth.dto.AppleLoginRequest;
+import com.sbpb.ddobak.server.domain.auth.dto.AppleTokenVerificationResponse;
 import com.sbpb.ddobak.server.domain.auth.dto.AuthResponse;
 
 /**
@@ -15,6 +16,14 @@ public interface AuthService {
      * @return 인증 결과 (토큰 정보 포함)
      */
     AuthResponse loginWithApple(AppleLoginRequest request);
+    
+    /**
+     * Apple Identity Token 검증 (테스트용)
+     * 토큰 검증만 수행하고 사용자 생성이나 로그인 처리는 하지 않음
+     * @param request Apple 로그인 요청 정보
+     * @return 토큰 검증 결과
+     */
+    AppleTokenVerificationResponse verifyAppleToken(AppleLoginRequest request);
     
     /**
      * 토큰 갱신
