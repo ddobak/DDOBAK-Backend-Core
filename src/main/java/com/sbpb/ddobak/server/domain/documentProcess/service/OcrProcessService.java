@@ -1,5 +1,6 @@
 package com.sbpb.ddobak.server.domain.documentProcess.service;
 
+import com.sbpb.ddobak.server.common.exception.ResourceNotFoundException;
 import com.sbpb.ddobak.server.common.utils.IdGenerator;
 import com.sbpb.ddobak.server.common.utils.LambdaUtil;
 import com.sbpb.ddobak.server.common.utils.S3Util;
@@ -10,6 +11,7 @@ import com.sbpb.ddobak.server.domain.documentProcess.dto.ocr.*;
 import com.sbpb.ddobak.server.domain.documentProcess.entity.Contract;
 import com.sbpb.ddobak.server.domain.documentProcess.entity.ContractType;
 import com.sbpb.ddobak.server.domain.documentProcess.entity.OcrContent;
+import com.sbpb.ddobak.server.domain.documentProcess.exception.ContractAccessDeniedException;
 import com.sbpb.ddobak.server.domain.documentProcess.repository.ContractRepository;
 import com.sbpb.ddobak.server.domain.documentProcess.repository.OcrContentRepository;
 import org.slf4j.Logger;
@@ -264,5 +266,30 @@ public class OcrProcessService {
             log.warn("Unknown contract type: {}, using null", contractTypeStr);
             return null;
         }
+    }
+    
+    /**
+     * 계약서 소유자 검증
+     * 계약서 소유자가 아닌 경우 예외 발생
+     * 
+     * @param contractId 계약서 ID
+     * @param userId 사용자 ID
+     * @throws ResourceNotFoundException 계약서를 찾을 수 없는 경우
+     * @throws ContractAccessDeniedException 계약서 소유자가 아닌 경우
+     */
+    @Transactional(readOnly = true)
+    public void verifyContractOwner(String contractId, Long userId) {
+        log.debug("계약서 소유자 검증 - ContractId: {}, UserId: {}", contractId, userId);
+        
+        Contract contract = contractRepository.findById(contractId)
+            .orElseThrow(() -> new ResourceNotFoundException("Contract", "id", contractId));
+        
+        if (!contract.getUserId().equals(userId)) {
+            log.warn("계약서 접근 권한 없음 - ContractId: {}, 요청 UserId: {}, 소유자 UserId: {}", 
+                    contractId, userId, contract.getUserId());
+            throw new ContractAccessDeniedException(contractId, userId);
+        }
+        
+        log.debug("계약서 소유자 검증 성공 - ContractId: {}, UserId: {}", contractId, userId);
     }
 } 
