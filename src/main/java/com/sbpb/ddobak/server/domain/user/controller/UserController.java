@@ -62,14 +62,18 @@ public class UserController {
      * 정보 조회
      * GET /user/profile
      * 
-     * @param userId 사용자 ID (쿼리 파라미터)
+     * @param authHeader Authorization 헤더 (JWT 토큰)
      * @return 사용자 프로필 정보
      */
     @GetMapping("/profile")
-    public ApiResponse<UserProfileResponse> getUserProfile(@RequestParam Long userId) {
-        log.info("사용자 프로필 조회 요청: userId={}", userId);
+    public ApiResponse<UserProfileResponse> getUserProfile(
+            @RequestHeader("Authorization") String authHeader) {
         
         try {
+            // JWT 토큰에서 사용자 ID 추출
+            Long userId = extractUserIdFromToken(authHeader);
+            log.info("사용자 프로필 조회 요청: userId={}", userId);
+            
             UserProfileResponse response = userService.getUserProfile(userId);
             return ApiResponse.success(response, UserSuccessCode.PROFILE_RETRIEVED);
         } catch (IllegalArgumentException e) {
@@ -85,17 +89,20 @@ public class UserController {
      * 개인정보 수정
      * PUT /user/profile
      * 
-     * @param userId 사용자 ID (쿼리 파라미터)
+     * @param authHeader Authorization 헤더 (JWT 토큰)
      * @param request 수정할 프로필 정보
      * @return 수정된 사용자 프로필 정보
      */
     @PutMapping("/profile")
     public ApiResponse<UserProfileResponse> updateUserProfile(
-            @RequestParam Long userId,
+            @RequestHeader("Authorization") String authHeader,
             @Valid @RequestBody UserProfileRequest request) {
-        log.info("사용자 프로필 수정 요청: userId={}, name={}", userId, request.getName());
         
         try {
+            // JWT 토큰에서 사용자 ID 추출
+            Long userId = extractUserIdFromToken(authHeader);
+            log.info("사용자 프로필 수정 요청: userId={}, name={}", userId, request.getName());
+            
             UserProfileResponse response = userService.updateUserProfile(userId, request);
             return ApiResponse.success(response, UserSuccessCode.PROFILE_UPDATED);
         } catch (IllegalArgumentException e) {
@@ -117,14 +124,16 @@ public class UserController {
      * 회원 탈퇴
      * DELETE /user/withdraw
      * 
-     * @param userId 사용자 ID (쿼리 파라미터)
+     * @param authHeader Authorization 헤더 (JWT 토큰)
      * @return 탈퇴 완료 응답
      */
     @DeleteMapping("/withdraw")
-    public ApiResponse<Void> withdrawUser(@RequestParam Long userId) {
-        log.info("회원 탈퇴 요청: userId={}", userId);
-        
+    public ApiResponse<Void> withdrawUser(@RequestHeader("Authorization") String authHeader) {
         try {
+            // JWT 토큰에서 사용자 ID 추출
+            Long userId = extractUserIdFromToken(authHeader);
+            log.info("회원 탈퇴 요청: userId={}", userId);
+            
             userService.withdrawUser(userId);
             return ApiResponse.success(UserSuccessCode.USER_WITHDRAWN);
         } catch (IllegalArgumentException e) {
