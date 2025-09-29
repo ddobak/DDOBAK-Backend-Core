@@ -71,14 +71,16 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // 특정 도메인 허용 (개발 및 테스트 환경)
         List<String> allowedOrigins = new ArrayList<>(Arrays.asList(
+            // 로컬 개발 환경
             "http://localhost:3000",
             "http://localhost:3001",
+            // 배포된 프론트엔드
             "https://ddobak-frontend-webview.vercel.app"
         ));
         
-        // 환경 변수에서 API Gateway URL 추가 (보안을 위해 직접 코드에 URL을 하드코딩하지 않음)
+        // .env 파일에서 API Gateway URL 추가 (보안을 위해 Gateway URL을 직접 넣으면 안됨!)
+        // spring-dotenv 라이브러리를 통해 .env 파일의 환경 변수를 자동으로 로드함
         String apiGatewayUrl = System.getenv("API_GATEWAY_URL");
         if (apiGatewayUrl != null && !apiGatewayUrl.isEmpty()) {
             allowedOrigins.add(apiGatewayUrl);
