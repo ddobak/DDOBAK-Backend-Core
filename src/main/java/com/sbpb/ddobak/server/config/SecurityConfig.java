@@ -11,6 +11,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Spring Security 설정
@@ -70,12 +72,19 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // 특정 도메인 허용 (개발 및 테스트 환경)
-        configuration.setAllowedOrigins(Arrays.asList(
+        List<String> allowedOrigins = new ArrayList<>(Arrays.asList(
             "http://localhost:3000",
             "http://localhost:3001",
             "https://ddobak-frontend-webview.vercel.app"
-            // TODO: 실제 운영 도메인 추가 필요
         ));
+        
+        // 환경 변수에서 API Gateway URL 추가 (보안을 위해 직접 코드에 URL을 하드코딩하지 않음)
+        String apiGatewayUrl = System.getenv("API_GATEWAY_URL");
+        if (apiGatewayUrl != null && !apiGatewayUrl.isEmpty()) {
+            allowedOrigins.add(apiGatewayUrl);
+        }
+        
+        configuration.setAllowedOrigins(allowedOrigins);
         
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList(
