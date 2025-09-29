@@ -31,22 +31,42 @@ public class DocumentProcessServiceImpl implements DocumentProcessService {
     }
 
     @Override
-    public OcrContentResponse getOcrResults(String contractId) {
+    public OcrContentResponse getOcrResults(String contractId, Long userId) {
+        // 계약서 소유자 검증
+        verifyContractOwner(contractId, userId);
         return ocrProcessService.getOcrResults(contractId);
     }
 
     @Override
-    public void updateOcrContent(String contractId, OcrUpdateRequest request) {
+    public void updateOcrContent(String contractId, OcrUpdateRequest request, Long userId) {
+        // 계약서 소유자 검증
+        verifyContractOwner(contractId, userId);
         ocrProcessService.updateOcrContent(contractId, request);
     }
 
     @Override
-    public AnalysisResponse requestAnalysis(AnalysisRequest request) {
+    public AnalysisResponse requestAnalysis(AnalysisRequest request, Long userId) {
+        // 계약서 소유자 검증
+        verifyContractOwner(request.getContractId(), userId);
         return analysisProcessService.requestAnalysis(request);
     }
 
     @Override
-    public AnalysisResultResponse getAnalysisResult(String contractId, String analysisId) {
+    public AnalysisResultResponse getAnalysisResult(String contractId, String analysisId, Long userId) {
+        // 계약서 소유자 검증
+        verifyContractOwner(contractId, userId);
         return analysisProcessService.getAnalysisResult(contractId, analysisId);
+    }
+    
+    /**
+     * 계약서 소유자 검증
+     * @param contractId 계약서 ID
+     * @param userId 사용자 ID
+     * @throws com.sbpb.ddobak.server.common.exception.ResourceNotFoundException 계약서가 존재하지 않는 경우
+     * @throws com.sbpb.ddobak.server.common.exception.BusinessException 권한이 없는 경우
+     */
+    private void verifyContractOwner(String contractId, Long userId) {
+        // 계약서 소유자 검증 로직은 OcrProcessService에 위임
+        ocrProcessService.verifyContractOwner(contractId, userId);
     }
 } 

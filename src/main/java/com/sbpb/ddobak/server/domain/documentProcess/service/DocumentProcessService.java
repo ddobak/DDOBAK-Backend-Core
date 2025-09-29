@@ -21,21 +21,31 @@ public interface DocumentProcessService {
 
     /**
      * OCR 결과 조회
+     * @param contractId 계약서 ID
+     * @param userId 사용자 ID (소유자 검증용)
      */
-    OcrContentResponse getOcrResults(String contractId);
+    OcrContentResponse getOcrResults(String contractId, Long userId);
 
     /**
      * OCR 내용 수정
+     * @param contractId 계약서 ID
+     * @param request 수정 요청 데이터
+     * @param userId 사용자 ID (소유자 검증용)
      */
-    void updateOcrContent(String contractId, OcrUpdateRequest request);
+    void updateOcrContent(String contractId, OcrUpdateRequest request, Long userId);
 
     /**
      * 분석 요청
+     * @param request 분석 요청 데이터
+     * @param userId 사용자 ID (소유자 검증용)
      */
-    AnalysisResponse requestAnalysis(AnalysisRequest request);
+    AnalysisResponse requestAnalysis(AnalysisRequest request, Long userId);
 
     /**
      * 분석 결과 조회
+     * @param contractId 계약서 ID
+     * @param analysisId 분석 ID
+     * @param userId 사용자 ID (소유자 검증용)
      */
-    AnalysisResultResponse getAnalysisResult(String contractId, String analysisId);
+    AnalysisResultResponse getAnalysisResult(String contractId, String analysisId, Long userId);
 } 
