@@ -37,20 +37,16 @@ logging:
 # Apple OAuth 설정
 apple:
   oauth:
-    # Apple Developer - 추후 설정 필요!!!!!!!!
+    # Apple Developer
     team-id: ${APPLE_TEAM_ID:TEAM_ID}
     
-    # Apple Developer Console에서 생성한 Service ID (App ID가 아님)
-    # Services IDs > 새로 생성하거나 기존 Service ID 사용
+    # 앱 번들 ID
     client-id: ${APPLE_CLIENT_ID:SERVICE_ID}  
     
-    # Private Key (.p8 파일)의 Key ID
-    # Keys > 생성한 Private Key의 Key ID
+    # Private Key (.p8 파일)의 파일명에 들어있는 ID
     key-id: ${APPLE_KEY_ID:KEY_ID} 
     
-    # Private Key (.p8 파일) 내용을 한 줄로 변환한 것
-    # -----BEGIN PRIVATE KEY----- 부분 포함, \n으로 줄바꿈 처리
-    # 변환 방법: awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' AuthKey_AB12CD34EF.p8
+    # Private Key (.p8 파일) 내용
     private-key: ${APPLE_PRIVATE_KEY:PRIVATE_KEY_CONTENT}
     
     # Apple 고정 값 (고정)
