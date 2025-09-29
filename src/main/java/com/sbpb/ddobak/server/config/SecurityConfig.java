@@ -44,11 +44,7 @@ public class SecurityConfig {
                 // Swagger UI 허용 (개발 환경)
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 
-                // 계약서 API 임시 허용 (개발/테스트용)
-                .requestMatchers("/api/contract/**").permitAll()
-                
-                // 사용자 API 임시 허용 (개발/테스트용)
-                .requestMatchers("/api/user/**").permitAll()
+                // 계약서 API와 사용자 API는 인증 필요 (개발/테스트용 permitAll설정 제거)
                 
                 // 꿀팁 아티클 API 공개 허용 (공개 API)
                 .requestMatchers("/api/tips/**").permitAll()
@@ -73,11 +69,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // 특정 도메인 허용 (운영환경에서는 실제 도메인으로 변경)
+        // 특정 도메인 허용 (개발 및 테스트 환경)
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
             "http://localhost:3001",
             "https://ddobak-frontend-webview.vercel.app"
+            // TODO: 실제 운영 도메인 추가 필요
         ));
         
         // 허용할 HTTP 메서드
