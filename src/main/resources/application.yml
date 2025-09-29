@@ -33,6 +33,7 @@ logging:
   level:
     com.sbpb.ddobak.server.common.utils.LambdaUtil: DEBUG
     com.sbpb.ddobak.server.domain.documentProcess.service.DocumentProcessService: DEBUG
+    org.springframework.security: DEBUG
 
 # Apple OAuth 설정
 apple:
