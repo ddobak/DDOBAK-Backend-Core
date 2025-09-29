@@ -52,7 +52,7 @@ public class ContractController {
         
         Long userId = extractUserIdFromToken(authorization);
         
-        OcrContentResponse response = documentProcessService.getOcrResults(contractId);
+        OcrContentResponse response = documentProcessService.getOcrResults(contractId, userId);
         return ApiResponse.success(response, SuccessCode.SUCCESS);
     }
 
@@ -68,7 +68,7 @@ public class ContractController {
         
         Long userId = extractUserIdFromToken(authorization);
         
-        documentProcessService.updateOcrContent(contractId, request);
+        documentProcessService.updateOcrContent(contractId, request, userId);
         return ApiResponse.success(SuccessCode.SUCCESS);
     }
 
@@ -83,7 +83,7 @@ public class ContractController {
         
         Long userId = extractUserIdFromToken(authorization);
         
-        AnalysisResponse response = documentProcessService.requestAnalysis(request);
+        AnalysisResponse response = documentProcessService.requestAnalysis(request, userId);
         return ApiResponse.success(response, SuccessCode.SUCCESS);
     }
 
@@ -99,7 +99,7 @@ public class ContractController {
         
         Long userId = extractUserIdFromToken(authorization);
         
-        AnalysisResultResponse response = documentProcessService.getAnalysisResult(contractId, analysisId);
+        AnalysisResultResponse response = documentProcessService.getAnalysisResult(contractId, analysisId, userId);
         return ApiResponse.success(response, SuccessCode.SUCCESS);
     }
 
