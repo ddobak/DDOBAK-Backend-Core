@@ -11,6 +11,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Spring Security 설정
@@ -44,11 +46,7 @@ public class SecurityConfig {
                 // Swagger UI 허용 (개발 환경)
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 
-                // 계약서 API 임시 허용 (개발/테스트용)
-                .requestMatchers("/api/contract/**").permitAll()
-                
-                // 사용자 API 임시 허용 (개발/테스트용)
-                .requestMatchers("/api/user/**").permitAll()
+                // 계약서 API와 사용자 API는 인증 필요 (개발/테스트용 permitAll설정 제거)
                 
                 // 꿀팁 아티클 API 공개 허용 (공개 API)
                 .requestMatchers("/api/tips/**").permitAll()
@@ -73,12 +71,22 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // 특정 도메인 허용 (운영환경에서는 실제 도메인으로 변경)
-        configuration.setAllowedOrigins(Arrays.asList(
+        List<String> allowedOrigins = new ArrayList<>(Arrays.asList(
+            // 로컬 개발 환경
             "http://localhost:3000",
             "http://localhost:3001",
+            // 배포된 프론트엔드
             "https://ddobak-frontend-webview.vercel.app"
         ));
+        
+        // .env 파일에서 API Gateway URL 추가 (보안을 위해 Gateway URL을 직접 넣으면 안됨!)
+        // spring-dotenv 라이브러리를 통해 .env 파일의 환경 변수를 자동으로 로드함
+        String apiGatewayUrl = System.getenv("API_GATEWAY_URL");
+        if (apiGatewayUrl != null && !apiGatewayUrl.isEmpty()) {
+            allowedOrigins.add(apiGatewayUrl);
+        }
+        
+        configuration.setAllowedOrigins(allowedOrigins);
         
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList(
