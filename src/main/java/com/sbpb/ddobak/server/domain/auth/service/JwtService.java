@@ -155,4 +155,20 @@ public class JwtService {
     public long getAccessTokenExpirationInSeconds() {
         return accessTokenExpiration / 1000;
     }
+    
+    /**
+     * Refresh Token 만료 시간 반환 (밀리초 단위)
+     * @return 만료 시간
+     */
+    public long getRefreshTokenExpirationInMillis() {
+        return refreshTokenExpiration;
+    }
+
+    /**
+     * 절대 만료 기간 설정 (30일) 🌟🌟🌟🌟🌟
+     * @return 절대 만료 기간 (밀리초)
+     */
+    public long getAbsoluteTokenExpirationInMillis() {
+        return 30L * 24 * 60 * 60 * 1000; // 30일
+    }
 } 

@@ -3,10 +3,12 @@ package com.sbpb.ddobak.server.domain.auth.service.impl;
 import com.sbpb.ddobak.server.domain.auth.dto.AppleLoginRequest;
 import com.sbpb.ddobak.server.domain.auth.dto.AppleTokenVerificationResponse;
 import com.sbpb.ddobak.server.domain.auth.dto.AuthResponse;
+import com.sbpb.ddobak.server.domain.auth.exception.TokenException;
 import com.sbpb.ddobak.server.domain.auth.oauth.AppleOAuthClient;
 import com.sbpb.ddobak.server.domain.auth.oauth.OAuthUserInfo;
 import com.sbpb.ddobak.server.domain.auth.service.AuthService;
 import com.sbpb.ddobak.server.domain.auth.service.JwtService;
+import com.sbpb.ddobak.server.domain.auth.service.TokenService;
 import com.sbpb.ddobak.server.domain.user.entity.User;
 import com.sbpb.ddobak.server.domain.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -29,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     
     private final AppleOAuthClient appleOAuthClient;
     private final JwtService jwtService;
+    private final TokenService tokenService;
     private final UserRepository userRepository;
     
     @Override
@@ -48,6 +51,19 @@ public class AuthServiceImpl implements AuthService {
             // 4. JWT 토큰 생성
             String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
             String refreshToken = jwtService.generateRefreshToken(user.getId());
+            
+            // 5. 리프레시 토큰 저장
+            tokenService.saveRefreshToken(
+                user.getId(), 
+                refreshToken, 
+                jwtService.getRefreshTokenExpirationInMillis()
+            );
+            
+            // 6. 절대 만료 기간 설정 (최초 로그인 또는 재로그인 시)
+            tokenService.setAbsoluteExpiry(
+                user.getId(), 
+                jwtService.getAbsoluteTokenExpirationInMillis()
+            );
             
             log.info("Apple login successful for user: {} ({})", user.getEmail(), user.getId());
             
@@ -71,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             // 1. Refresh Token 검증
             if (!jwtService.isTokenValid(refreshToken) || !jwtService.isRefreshToken(refreshToken)) {
-                throw new RuntimeException("Invalid refresh token");
+                throw TokenException.invalidRefreshToken();
             }
             
             // 2. 사용자 정보 조회
@@ -79,14 +95,34 @@ public class AuthServiceImpl implements AuthService {
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
             
-            // 3. 새로운 Access Token 생성
+            // 3. 토큰 재사용 감지 (보안 강화)
+            if (tokenService.isTokenReused(userId, refreshToken)) {
+                tokenService.invalidateRefreshToken(userId);
+                throw TokenException.tokenReused();
+            }
+            
+            // 4. 절대 만료 시간 확인
+            if (tokenService.isAbsolutelyExpired(userId)) {
+                tokenService.invalidateRefreshToken(userId);
+                throw TokenException.absolutelyExpired();
+            }
+            
+            // 5. 새 액세스 토큰 생성
             String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
+            
+            // 6. 새 리프레시 토큰 생성 (토큰 순환 전략)
+            String newRefreshToken = jwtService.generateRefreshToken(user.getId());
+            tokenService.saveRefreshToken(
+                user.getId(), 
+                newRefreshToken, 
+                jwtService.getRefreshTokenExpirationInMillis()
+            );
             
             log.info("Token refreshed for user: {} ({})", user.getEmail(), user.getId());
             
             return AuthResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(refreshToken) // 기존 Refresh Token 재사용
+                .refreshToken(newRefreshToken) // 새 리프레시 토큰 반환
                 .expiresIn(jwtService.getAccessTokenExpirationInSeconds())
                 .userId(user.getId())
                 .email(user.getEmail())
@@ -95,6 +131,9 @@ public class AuthServiceImpl implements AuthService {
                 
         } catch (Exception e) {
             log.error("Token refresh failed: {}", e.getMessage(), e);
+            if (e instanceof TokenException) {
+                throw e;
+            }
             throw new RuntimeException("Token refresh failed", e);
         }
     }
@@ -102,9 +141,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(String accessToken) {
         try {
-            // 현재 구현에서는 단순히 로그를 남김
-            // 추후 Redis 등을 사용한 토큰 블랙리스트 구현 가능
+            // 토큰에서 사용자 ID 추출
             Long userId = jwtService.getUserIdFromToken(accessToken);
+            
+            // 토큰 무효화
+            tokenService.invalidateRefreshToken(userId);
+            
             log.info("User logged out: {}", userId);
             
         } catch (Exception e) {
