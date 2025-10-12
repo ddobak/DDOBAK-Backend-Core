@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -73,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
                 .expiresIn(jwtService.getAccessTokenExpirationInSeconds())
                 .userId(user.getId())
                 .email(user.getEmail())
-                .isNewUser(user.getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(1))) // 1분 이내 생성된 경우 신규 사용자
+                .isNewUser("Apple User".equals(user.getName())) // 이름이 기본값인 경우 신규 사용자로 간주
                 .build();
                 
         } catch (Exception e) {
