@@ -2,6 +2,7 @@ package com.sbpb.ddobak.server.config;
 
 import com.sbpb.ddobak.server.config.security.JwtAuthenticationFilter;
 import com.sbpb.ddobak.server.domain.auth.service.JwtService;
+import com.sbpb.ddobak.server.domain.auth.service.TokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtService jwtService;
+    private final TokenService tokenService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -70,7 +72,7 @@ public class SecurityConfig {
             .formLogin(formLogin -> formLogin.disable())
             
             // JWT 인증 필터 추가
-            .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new JwtAuthenticationFilter(jwtService, tokenService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -1,6 +1,7 @@
 package com.sbpb.ddobak.server.config.security;
 
 import com.sbpb.ddobak.server.domain.auth.service.JwtService;
+import com.sbpb.ddobak.server.domain.auth.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final TokenService tokenService;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(JwtService jwtService, TokenService tokenService) {
         this.jwtService = jwtService;
+        this.tokenService = tokenService;
     }
 
     @Override
@@ -45,6 +49,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             if (jwtService.isTokenValid(jwt)) {
                 Long userId = jwtService.getUserIdFromToken(jwt);
+                
+                // AccessToken 무효화 검증 (리프레시 토큰 갱신 후 "무조건"!! 기존 AccessToken 무효화)
+                if (!isAccessTokenStillValid(userId, jwt)) {
+                    log.debug("AccessToken이 무효화되었습니다 - 사용자 ID: {}", userId);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+                
                 String email = null;
                 
                 try {
@@ -69,5 +81,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         
         filterChain.doFilter(request, response);
+    }
+    
+    /**
+     * AccessToken이 여전히 유효한지 확인
+     * 리프레시 토큰 갱신 후 기존 AccessToken이 무효화되었는지 검증
+     * 
+     * @param userId 사용자 ID
+     * @param accessToken AccessToken
+     * @return AccessToken 유효 여부
+     */
+    private boolean isAccessTokenStillValid(Long userId, String accessToken) {
+        try {
+            // AccessToken의 발급 시간(iat) 조회
+            Instant tokenIssuedAt = jwtService.getTokenIssuedAt(accessToken);
+            
+            // DB에서 AccessToken 무효화 기준 시간 조회
+            Instant accessTokenValidAfter = tokenService.getAccessTokenValidAfter(userId);
+            
+            // 토큰 발급 시간이 무효화 기준 시간보다 이후여야 유효
+            boolean isValid = tokenIssuedAt.isAfter(accessTokenValidAfter);
+            
+            if (!isValid) {
+                log.debug("AccessToken 무효화됨 - UserId: {}, TokenIssuedAt: {}, ValidAfter: {}", 
+                    userId, tokenIssuedAt, accessTokenValidAfter);
+            }
+            
+            return isValid;
+        } catch (Exception e) {
+            log.warn("AccessToken 유효성 검증 중 오류: {}", e.getMessage());
+            return false; // 오류 발생 시 안전하게 무효로 처리
+        }
     }
 }

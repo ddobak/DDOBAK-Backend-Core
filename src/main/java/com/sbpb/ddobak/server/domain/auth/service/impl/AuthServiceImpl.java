@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -109,7 +110,12 @@ public class AuthServiceImpl implements AuthService {
             // 5. 새 액세스 토큰 생성
             String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
             
-            // 6. 마스터 토큰 여부 확인
+            // 6. 기존 AccessToken 무효화 (새 액세스 토큰 발급 시점을 기준으로 설정)
+            Instant now = Instant.now();
+            tokenService.updateAccessTokenValidAfter(userId, now);
+            log.info("AccessToken 무효화 완료 - 기준 시간: {} for user: {} ({})", now, user.getEmail(), user.getId());
+            
+            // 7. 마스터 토큰 여부 확인
             boolean isMaster = tokenService.isMasterToken(userId);
             String responseRefreshToken;
             
