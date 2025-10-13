@@ -99,8 +99,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // DB에서 AccessToken 무효화 기준 시간 조회
             Instant accessTokenValidAfter = tokenService.getAccessTokenValidAfter(userId);
             
-            // 토큰 발급 시간이 무효화 기준 시간보다 이후여야 유효
-            boolean isValid = tokenIssuedAt.isAfter(accessTokenValidAfter);
+            // 토큰 발급 시간이 무효화 기준 시간보다 이후이거나 같아야 유효
+            // (밀리초 단위 차이로 인한 타이밍 이슈 방지)
+            boolean isValid = !tokenIssuedAt.isBefore(accessTokenValidAfter);
             
             if (!isValid) {
                 log.debug("AccessToken 무효화됨 - UserId: {}, TokenIssuedAt: {}, ValidAfter: {}", 

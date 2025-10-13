@@ -107,13 +107,13 @@ public class AuthServiceImpl implements AuthService {
                 throw TokenException.absolutelyExpired();
             }
             
-            // 5. 새 액세스 토큰 생성
-            String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
-            
-            // 6. 기존 AccessToken 무효화 (새 액세스 토큰 발급 시점을 기준으로 설정)
+            // 5. 새 액세스 토큰 생성 전에 무효화 기준 시간 설정
             Instant now = Instant.now();
             tokenService.updateAccessTokenValidAfter(userId, now);
             log.info("AccessToken 무효화 완료 - 기준 시간: {} for user: {} ({})", now, user.getEmail(), user.getId());
+            
+            // 6. 새 액세스 토큰 생성 (무효화 기준 시간 이후에 생성)
+            String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
             
             // 7. 마스터 토큰 여부 확인
             boolean isMaster = tokenService.isMasterToken(userId);
