@@ -39,20 +39,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         try {
             final String authHeader = request.getHeader("Authorization");
+            log.debug("JWT 인증 필터 시작 - URI: {}, AuthHeader: {}", request.getRequestURI(), authHeader);
             
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                log.debug("Authorization 헤더가 없거나 Bearer 형식이 아님 - URI: {}", request.getRequestURI());
                 filterChain.doFilter(request, response);
                 return;
             }
             
             final String jwt = authHeader.substring(7);
+            log.debug("JWT 토큰 추출 완료 - URI: {}, Token: {}...", request.getRequestURI(), jwt.substring(0, Math.min(20, jwt.length())));
             
             if (jwtService.isTokenValid(jwt)) {
+                log.debug("JWT 토큰 서명/만료 검증 통과 - URI: {}", request.getRequestURI());
                 Long userId = jwtService.getUserIdFromToken(jwt);
+                log.debug("JWT에서 사용자 ID 추출: {} - URI: {}", userId, request.getRequestURI());
                 
                 // AccessToken 무효화 검증 (리프레시 토큰 갱신 후 "무조건"!! 기존 AccessToken 무효화)
                 if (!isAccessTokenStillValid(userId, jwt)) {
-                    log.debug("AccessToken이 무효화되었습니다 - 사용자 ID: {}", userId);
+                    log.warn("AccessToken이 무효화되었습니다 - 사용자 ID: {}, URI: {}", userId, request.getRequestURI());
                     filterChain.doFilter(request, response);
                     return;
                 }
@@ -74,7 +79,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } else {
-                log.debug("유효하지 않은 JWT 토큰입니다.");
+                log.warn("유효하지 않은 JWT 토큰입니다 - URI: {}", request.getRequestURI());
             }
         } catch (Exception e) {
             log.error("JWT 토큰 처리 중 오류 발생: {}", e.getMessage());
@@ -95,22 +100,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // AccessToken의 발급 시간(iat) 조회
             Instant tokenIssuedAt = jwtService.getTokenIssuedAt(accessToken);
+            log.debug("AccessToken 발급 시간 조회 - UserId: {}, TokenIssuedAt: {}", userId, tokenIssuedAt);
             
             // DB에서 AccessToken 무효화 기준 시간 조회
             Instant accessTokenValidAfter = tokenService.getAccessTokenValidAfter(userId);
+            log.debug("AccessToken 무효화 기준 시간 조회 - UserId: {}, ValidAfter: {}", userId, accessTokenValidAfter);
             
             // 토큰 발급 시간이 무효화 기준 시간보다 이후이거나 같아야 유효
             // (밀리초 단위 차이로 인한 타이밍 이슈 방지)
             boolean isValid = !tokenIssuedAt.isBefore(accessTokenValidAfter);
             
+            log.debug("AccessToken 유효성 검증 결과 - UserId: {}, TokenIssuedAt: {}, ValidAfter: {}, isValid: {}", 
+                userId, tokenIssuedAt, accessTokenValidAfter, isValid);
+            
             if (!isValid) {
-                log.debug("AccessToken 무효화됨 - UserId: {}, TokenIssuedAt: {}, ValidAfter: {}", 
+                log.warn("AccessToken 무효화됨 - UserId: {}, TokenIssuedAt: {}, ValidAfter: {}", 
                     userId, tokenIssuedAt, accessTokenValidAfter);
             }
             
             return isValid;
         } catch (Exception e) {
-            log.warn("AccessToken 유효성 검증 중 오류: {}", e.getMessage());
+            log.error("AccessToken 유효성 검증 중 오류 - UserId: {}, Error: {}", userId, e.getMessage(), e);
             return false; // 오류 발생 시 안전하게 무효로 처리
         }
     }
