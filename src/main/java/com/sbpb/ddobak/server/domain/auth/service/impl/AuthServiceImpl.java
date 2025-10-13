@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
 
@@ -108,7 +109,8 @@ public class AuthServiceImpl implements AuthService {
             }
             
             // 5. 새 액세스 토큰 생성 전에 무효화 기준 시간 설정
-            Instant now = Instant.now();
+            // JWT의 iat는 초 단위 정밀도이므로 초 단위로 맞춰줌
+            Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
             tokenService.updateAccessTokenValidAfter(userId, now);
             log.info("AccessToken 무효화 완료 - 기준 시간: {} for user: {} ({})", now, user.getEmail(), user.getId());
             
