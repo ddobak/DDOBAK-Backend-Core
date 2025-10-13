@@ -93,12 +93,18 @@ public class JwtService {
     
     /**
      * JWT 토큰 유효성 검증
+     * 서명 검증과 만료 여부를 모두 확인
      * @param token JWT 토큰
      * @return 유효 여부
      */
     public boolean isTokenValid(String token) {
         try {
             parseToken(token);
+            // 만료 여부도 함께 확인
+            if (isTokenExpired(token)) {
+                log.warn("JWT token is expired");
+                return false;
+            }
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             log.warn("Invalid JWT token: {}", e.getMessage());
