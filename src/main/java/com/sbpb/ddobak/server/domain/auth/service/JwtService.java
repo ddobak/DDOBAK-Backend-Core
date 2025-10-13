@@ -177,4 +177,14 @@ public class JwtService {
     public long getAbsoluteTokenExpirationInMillis() {
         return 30L * 24 * 60 * 60 * 1000; // 30일
     }
+    
+    /**
+     * JWT 토큰의 발급 시간(iat) 조회
+     * @param token JWT 토큰
+     * @return 발급 시간 (Instant)
+     */
+    public Instant getTokenIssuedAt(String token) {
+        Claims claims = parseToken(token);
+        return claims.getIssuedAt().toInstant();
+    }
 } 

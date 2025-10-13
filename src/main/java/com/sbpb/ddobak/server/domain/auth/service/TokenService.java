@@ -66,4 +66,19 @@ public interface TokenService {
      * @return 마스터 토큰 여부
      */
     boolean isMasterToken(Long userId);
+    
+    /**
+     * AccessToken 무효화 기준 시간 조회
+     * @param userId 사용자 ID
+     * @return AccessToken 무효화 기준 시간
+     */
+    Instant getAccessTokenValidAfter(Long userId);
+    
+    /**
+     * AccessToken 무효화 기준 시간 업데이트
+     * 리프레시 토큰 갱신 시 기존 AccessToken을 무효화하기 위해 호출
+     * @param userId 사용자 ID
+     * @param validAfter 새로운 기준 시간
+     */
+    void updateAccessTokenValidAfter(Long userId, Instant validAfter);
 }

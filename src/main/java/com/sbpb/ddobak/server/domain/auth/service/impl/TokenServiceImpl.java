@@ -42,6 +42,7 @@ public class TokenServiceImpl implements TokenService {
                 .lastUsedAt(Instant.now())
                 .isValid(true)
                 .isMaster(false) // 기본값은 일반 토큰
+                .accessTokenValidAfter(Instant.now()) // 현재 시간부터 AccessToken 유효
                 .build();
             userTokenRepository.save(newToken);
             log.debug("Created new refresh token for user: {}", userId);
@@ -112,5 +113,28 @@ public class TokenServiceImpl implements TokenService {
         return userTokenRepository.findByUserId(userId)
             .map(UserToken::isMaster)
             .orElse(false); // 토큰이 없으면 마스터가 아님
+    }
+    
+    @Override
+    public Instant getAccessTokenValidAfter(Long userId) {
+        return userTokenRepository.findByUserId(userId)
+            .map(UserToken::getAccessTokenValidAfter)
+            .orElse(Instant.EPOCH); // 토큰이 없으면 EPOCH(1970년) 반환
+    }
+    
+    @Override
+    @Transactional
+    public void updateAccessTokenValidAfter(Long userId, Instant validAfter) {
+        userTokenRepository.findByUserId(userId)
+            .ifPresentOrElse(
+                token -> {
+                    token.updateAccessTokenValidAfter(validAfter);
+                    userTokenRepository.save(token);
+                    log.debug("Updated accessTokenValidAfter for user: {} to {}", userId, validAfter);
+                },
+                () -> {
+                    log.debug("No token found for user: {} when updating accessTokenValidAfter", userId);
+                }
+            );
     }
 }

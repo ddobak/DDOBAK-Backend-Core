@@ -45,9 +45,16 @@ public class UserToken {
     @Column(nullable = false)
     private boolean isMaster;
     
+    /**
+     * AccessToken 무효화 기준 시간
+     * 이 시간 이후에 발급된 AccessToken만 유효함
+     * 리프레시 토큰 갱신 시 이 값을 현재 시간으로 업데이트하여 기존 AccessToken 무효화
+     */
+    private Instant accessTokenValidAfter;
+    
     @Builder
     public UserToken(Long userId, String refreshToken, Instant expiryDate, 
-                     Instant absoluteExpiryDate, Instant lastUsedAt, boolean isValid, boolean isMaster) {
+                     Instant absoluteExpiryDate, Instant lastUsedAt, boolean isValid, boolean isMaster, Instant accessTokenValidAfter) {
         this.userId = userId;
         this.refreshToken = refreshToken;
         this.expiryDate = expiryDate;
@@ -55,6 +62,7 @@ public class UserToken {
         this.lastUsedAt = lastUsedAt;
         this.isValid = isValid;
         this.isMaster = isMaster;
+        this.accessTokenValidAfter = accessTokenValidAfter;
     }
     
     @PrePersist
@@ -102,5 +110,14 @@ public class UserToken {
      */
     public void setMaster(boolean isMaster) {
         this.isMaster = isMaster;
+    }
+    
+    /**
+     * AccessToken 무효화 기준 시간 업데이트
+     * 리프레시 토큰 갱신 시 호출하여 기존 AccessToken 무효화
+     * @param accessTokenValidAfter 새로운 기준 시간
+     */
+    public void updateAccessTokenValidAfter(Instant accessTokenValidAfter) {
+        this.accessTokenValidAfter = accessTokenValidAfter;
     }
 }
