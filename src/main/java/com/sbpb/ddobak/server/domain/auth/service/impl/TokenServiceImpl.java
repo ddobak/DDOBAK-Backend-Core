@@ -41,6 +41,7 @@ public class TokenServiceImpl implements TokenService {
                 .absoluteExpiryDate(Instant.now().plusMillis(30L * 24 * 60 * 60 * 1000)) // 30일 절대 만료
                 .lastUsedAt(Instant.now())
                 .isValid(true)
+                .isMaster(false) // 기본값은 일반 토큰
                 .build();
             userTokenRepository.save(newToken);
             log.debug("Created new refresh token for user: {}", userId);
@@ -104,5 +105,12 @@ public class TokenServiceImpl implements TokenService {
         return userTokenRepository.findByUserId(userId)
             .map(UserToken::getExpiryDate)
             .orElse(null);
+    }
+    
+    @Override
+    public boolean isMasterToken(Long userId) {
+        return userTokenRepository.findByUserId(userId)
+            .map(UserToken::isMaster)
+            .orElse(false); // 토큰이 없으면 마스터가 아님
     }
 }

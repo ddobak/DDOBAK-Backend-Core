@@ -109,19 +109,29 @@ public class AuthServiceImpl implements AuthService {
             // 5. 새 액세스 토큰 생성
             String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
             
-            // 6. 새 리프레시 토큰 생성 (토큰 순환 전략)
-            String newRefreshToken = jwtService.generateRefreshToken(user.getId());
-            tokenService.saveRefreshToken(
-                user.getId(), 
-                newRefreshToken, 
-                jwtService.getRefreshTokenExpirationInMillis()
-            );
+            // 6. 마스터 토큰 여부 확인
+            boolean isMaster = tokenService.isMasterToken(userId);
+            String responseRefreshToken;
             
-            log.info("Token refreshed for user: {} ({})", user.getEmail(), user.getId());
+            if (isMaster) {
+                // 마스터 토큰인 경우: 기존 리프레시 토큰 유지 (토큰 순환 비활성화)
+                responseRefreshToken = refreshToken;
+                log.info("Master token refresh - keeping existing refresh token for user: {} ({})", 
+                    user.getEmail(), user.getId());
+            } else {
+                // 일반 토큰인 경우: 새 리프레시 토큰 생성 (토큰 재발급)
+                responseRefreshToken = jwtService.generateRefreshToken(user.getId());
+                tokenService.saveRefreshToken(
+                    user.getId(), 
+                    responseRefreshToken, 
+                    jwtService.getRefreshTokenExpirationInMillis()
+                );
+                log.info("Token refreshed with rotation for user: {} ({})", user.getEmail(), user.getId());
+            }
             
             return AuthResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken) // 새 리프레시 토큰 반환
+                .refreshToken(responseRefreshToken)
                 .expiresIn(jwtService.getAccessTokenExpirationInSeconds())
                 .userId(user.getId())
                 .email(user.getEmail())

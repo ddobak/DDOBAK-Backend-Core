@@ -37,15 +37,24 @@ public class UserToken {
     @Column(nullable = false)
     private boolean isValid;
     
+    /**
+     * 마스터 토큰 처리하기
+     * true인 경우 리프레시 토큰 순환을 비활성화.
+     * 개발/테스트 환경에서 리프레시 토큰이 계속 유지되도록 함
+     */
+    @Column(nullable = false)
+    private boolean isMaster;
+    
     @Builder
     public UserToken(Long userId, String refreshToken, Instant expiryDate, 
-                     Instant absoluteExpiryDate, Instant lastUsedAt, boolean isValid) {
+                     Instant absoluteExpiryDate, Instant lastUsedAt, boolean isValid, boolean isMaster) {
         this.userId = userId;
         this.refreshToken = refreshToken;
         this.expiryDate = expiryDate;
         this.absoluteExpiryDate = absoluteExpiryDate;
         this.lastUsedAt = lastUsedAt;
         this.isValid = isValid;
+        this.isMaster = isMaster;
     }
     
     @PrePersist
@@ -85,5 +94,13 @@ public class UserToken {
      */
     public void updateAbsoluteExpiryDate(Instant absoluteExpiryDate) {
         this.absoluteExpiryDate = absoluteExpiryDate;
+    }
+    
+    /**
+     * 마스터 토큰 설정
+     * @param isMaster 마스터 토큰 여부
+     */
+    public void setMaster(boolean isMaster) {
+        this.isMaster = isMaster;
     }
 }

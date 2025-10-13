@@ -59,4 +59,11 @@ public interface TokenService {
      * @return 만료 시간
      */
     Instant getTokenExpiryDate(Long userId);
+    
+    /**
+     * 마스터 토큰 여부 확인
+     * @param userId 사용자 ID
+     * @return 마스터 토큰 여부
+     */
+    boolean isMasterToken(Long userId);
 }
