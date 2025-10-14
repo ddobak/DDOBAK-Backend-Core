@@ -61,13 +61,18 @@ public class AppleJwtUtils {
      * @throws Exception 토큰 검증 실패 시
      */
     public Claims parseAndValidateToken(String identityToken) throws Exception {
+        log.debug("Starting Apple Identity Token validation");
+        
         // 1. JWT 헤더에서 kid(Key ID) 추출
         String keyId = extractKeyIdFromToken(identityToken);
+        log.debug("Extracted key ID from token: {}", keyId);
         
         // 2. Apple 공개키 가져오기
         PublicKey publicKey = getApplePublicKey(keyId);
+        log.debug("Retrieved Apple public key for key ID: {}", keyId);
         
         // 3. JWT 토큰 검증 및 파싱
+        log.debug("Validating token with issuer: {} and audience: {}", appleIssuer, appleClientId);
         Claims claims = Jwts.parser()
             .verifyWith(publicKey)
             .requireIssuer(appleIssuer)  // Apple 발급자 확인

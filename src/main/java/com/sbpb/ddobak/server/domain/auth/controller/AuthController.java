@@ -13,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 인증 관련 API 컨트롤러
  */
@@ -34,13 +37,21 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> loginWithApple(
         @Valid @RequestBody AppleLoginRequest request
     ) {
-        log.info("Apple login request received");
+        log.info("Apple login request received - identityToken length: {}, authorizationCode: {}", 
+            request.getIdentityToken() != null ? request.getIdentityToken().length() : 0,
+            request.getAuthorizationCode() != null ? "provided" : "not provided");
         
-        AuthResponse response = authService.loginWithApple(request);
-        
-        return ResponseEntity.ok(
-            ApiResponse.success(response, SuccessCode.SUCCESS)
-        );
+        try {
+            AuthResponse response = authService.loginWithApple(request);
+            log.info("Apple login successful for user: {}", response.getEmail());
+            
+            return ResponseEntity.ok(
+                ApiResponse.success(response, SuccessCode.SUCCESS)
+            );
+        } catch (Exception e) {
+            log.error("Apple login failed: {}", e.getMessage(), e);
+            throw e;
+        }
     }
     
     /**

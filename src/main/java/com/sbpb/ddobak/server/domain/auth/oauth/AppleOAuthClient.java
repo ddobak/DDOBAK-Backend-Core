@@ -41,6 +41,8 @@ public class AppleOAuthClient implements OAuthClient {
     @Override
     public OAuthUserInfo getUserInfo(String identityToken) {
         try {
+            log.debug("Starting Apple identity token parsing");
+            
             // Apple Identity Token 검증 및 파싱
             Claims claims = appleJwtUtils.parseAndValidateToken(identityToken);
             
@@ -48,18 +50,23 @@ public class AppleOAuthClient implements OAuthClient {
             String providerId = claims.getSubject();  // Apple 사용자 고유 ID
             String email = claims.get("email", String.class);
             
+            log.debug("Extracted user info - providerId: {}, email: {}", providerId, email);
+            
             // 사용자 이름은 별도로 전달되는 경우가 있음 (최초 로그인 시에만)
             String name = extractNameFromClaims(claims);
             
-            return OAuthUserInfo.builder()
+            OAuthUserInfo userInfo = OAuthUserInfo.builder()
                 .providerId(providerId)
                 .email(email)
                 .name(name)
                 .provider(OAuthProvider.APPLE)
                 .build();
                 
+            log.info("Successfully parsed Apple user info for: {}", email);
+            return userInfo;
+                
         } catch (Exception e) {
-            log.error("Failed to parse Apple identity token: {}", e.getMessage());
+            log.error("Failed to parse Apple identity token: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to parse Apple identity token", e);
         }
     }
