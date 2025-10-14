@@ -40,8 +40,10 @@ public class AwsConfig {
     @Getter
     @Setter
     public static class S3Properties {
-        private String testBucket;
-        private String serviceBucket;
+        private String bucket;
+        private String environment;  // dev/prod로 환경 구분
+        private String serviceBucket;  
+        private String testBucket;    
     }
 
     @Getter
