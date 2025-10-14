@@ -15,14 +15,14 @@ import lombok.Setter;
 public class AppleLoginRequest {
     
     /**
-     * Apple Identity Token (JWT 형식)
+     * Apple Identity Token
      * Apple에서 발급한 사용자 정보가 포함된 JWT 토큰
      */
     @NotBlank(message = "Identity token is required")
     private String identityToken;
     
     /**
-     * Apple Authorization Code (선택사항)
+     * Apple Authorization Code 
      * Refresh Token 발급을 위해 필요
      * 탈퇴 시 Apple 서버에서 계정 삭제를 위해 사용됨
      */

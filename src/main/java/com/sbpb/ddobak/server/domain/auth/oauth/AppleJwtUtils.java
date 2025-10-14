@@ -181,8 +181,8 @@ public class AppleJwtUtils {
     }
     
     /**
-     * Apple Private Key (.p8 파일 내용) 파싱
-     * @param privateKeyContent Private Key 내용 (PEM 형식 또는 Base64)
+     * Apple Private Key
+     * @param privateKeyContent Private Key 내용
      * @return PrivateKey 객체
      */
     private PrivateKey parsePrivateKey(String privateKeyContent) throws Exception {
