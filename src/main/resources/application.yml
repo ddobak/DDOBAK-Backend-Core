@@ -72,8 +72,8 @@ aws:
   s3:
     bucket: ddobak-service
     environment: dev  # dev/prod로 환경 구분
-    service-bucket: ddobak-service  
-    test-bucket: ddobak-service    
+    service-bucket: ddobak-service  # 기존 코드 호환성
+    test-bucket: ddobak-service     # 기존 코드 호환성
   lambda:
     ocr-function-name: ocr_lambda
     analysis-function-name: bedrock_lambda
