@@ -35,6 +35,9 @@ public class User {
     @Column(name = "oauth_provider_id")
     private String oauthProviderId;  // OAuth 제공자에서의 사용자 ID
 
+    @Column(name = "apple_refresh_token", length = 2048)
+    private String appleRefreshToken;  // Apple Refresh Token (계정 삭제 시 사용)
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -57,12 +60,13 @@ public class User {
 
     @Builder
     public User(String email, String name,
-                String oauthProvider, String oauthProviderId,
+                String oauthProvider, String oauthProviderId, String appleRefreshToken,
                 LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime lastLoginAt, Boolean isDeleted) {
         this.email = email;
         this.name = name;
         this.oauthProvider = oauthProvider;
         this.oauthProviderId = oauthProviderId;
+        this.appleRefreshToken = appleRefreshToken;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.lastLoginAt = lastLoginAt;
@@ -130,6 +134,14 @@ public class User {
      */
     public void updateEmail(String email) {
         this.email = email;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Apple Refresh Token 업데이트
+     */
+    public void updateAppleRefreshToken(String appleRefreshToken) {
+        this.appleRefreshToken = appleRefreshToken;
         this.updatedAt = LocalDateTime.now();
     }
 }
