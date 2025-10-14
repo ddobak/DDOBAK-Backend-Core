@@ -3,22 +3,24 @@ package com.sbpb.ddobak.server.domain.auth.oauth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.KeyFactory;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.time.Instant;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +41,15 @@ public class AppleJwtUtils {
     
     @Value("${apple.oauth.public-keys-url}")
     private String applePublicKeysUrl;
+    
+    @Value("${apple.oauth.team-id}")
+    private String appleTeamId;
+    
+    @Value("${apple.oauth.key-id}")
+    private String appleKeyId;
+    
+    @Value("${apple.oauth.private-key}")
+    private String applePrivateKey;
     
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -74,6 +85,7 @@ public class AppleJwtUtils {
      * @param token JWT 토큰
      * @return Key ID
      */
+    @SuppressWarnings("unchecked")
     private String extractKeyIdFromToken(String token) {
         try {
             String[] parts = token.split("\\.");
@@ -91,6 +103,7 @@ public class AppleJwtUtils {
      * @param keyId Apple 공개키의 Key ID
      * @return RSA 공개키
      */
+    @SuppressWarnings("unchecked")
     private PublicKey getApplePublicKey(String keyId) throws Exception {
         // Apple 공개키 엔드포인트 호출
         HttpRequest request = HttpRequest.newBuilder()
@@ -137,5 +150,60 @@ public class AppleJwtUtils {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         
         return keyFactory.generatePublic(keySpec);
+    }
+    
+    /**
+     * Apple Client Secret JWT 생성
+     * Token Revocation API 호출 시 필요한 client_secret 생성
+     * @return Client Secret JWT
+     * @throws Exception 키 파싱 또는 JWT 생성 실패 시
+     */
+    public String generateClientSecret() throws Exception {
+        Instant now = Instant.now();
+        Instant expiration = now.plusSeconds(15777000); // 6개월
+        
+        // Private Key 파싱
+        PrivateKey privateKey = parsePrivateKey(applePrivateKey);
+        
+        // JWT 생성
+        return Jwts.builder()
+            .header()
+                .add("kid", appleKeyId)
+                .add("alg", "ES256")
+                .and()
+            .issuer(appleTeamId)
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(expiration))
+            .audience().add("https://appleid.apple.com").and()
+            .subject(appleClientId)
+            .signWith(privateKey, Jwts.SIG.ES256)
+            .compact();
+    }
+    
+    /**
+     * Apple Private Key (.p8 파일 내용) 파싱
+     * @param privateKeyContent Private Key 내용 (PEM 형식 또는 Base64)
+     * @return PrivateKey 객체
+     */
+    private PrivateKey parsePrivateKey(String privateKeyContent) throws Exception {
+        try {
+            // PEM 형식의 헤더/푸터 제거
+            String privateKeyPEM = privateKeyContent
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replaceAll("\\s", "");
+            
+            // Base64 디코딩
+            byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
+            
+            // EC Private Key 생성
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+            KeyFactory keyFactory = KeyFactory.getInstance("EC");
+            
+            return keyFactory.generatePrivate(keySpec);
+        } catch (Exception e) {
+            log.error("Failed to parse Apple private key: {}", e.getMessage());
+            throw new RuntimeException("Invalid Apple private key", e);
+        }
     }
 } 
