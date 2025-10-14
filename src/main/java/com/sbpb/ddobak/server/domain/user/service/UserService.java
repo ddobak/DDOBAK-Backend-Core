@@ -2,12 +2,12 @@ package com.sbpb.ddobak.server.domain.user.service;
 
 import com.sbpb.ddobak.server.common.exception.DuplicateResourceException;
 import com.sbpb.ddobak.server.common.exception.ResourceNotFoundException;
+import com.sbpb.ddobak.server.domain.auth.oauth.AppleOAuthClient;
 import com.sbpb.ddobak.server.domain.auth.service.JwtService;
 import com.sbpb.ddobak.server.domain.user.dto.CreateUserRequest;
 import com.sbpb.ddobak.server.domain.user.dto.UserProfileRequest;
 import com.sbpb.ddobak.server.domain.user.dto.UserProfileResponse;
 import com.sbpb.ddobak.server.domain.user.dto.UserResponse;
-import com.sbpb.ddobak.server.domain.user.dto.UserAnalysesRequest;
 import com.sbpb.ddobak.server.domain.user.dto.UserAnalysesResponse;
 import com.sbpb.ddobak.server.domain.user.entity.User;
 import com.sbpb.ddobak.server.domain.user.repository.UserRepository;
@@ -36,6 +36,7 @@ public class UserService {
     private final JwtService jwtService;
     private final ContractAnalysisRepository contractAnalysisRepository;
     private final ToxicClauseRepository toxicClauseRepository;
+    private final AppleOAuthClient appleOAuthClient;
 
     /**
      * 사용자 생성 (테스트용)
@@ -186,6 +187,23 @@ public class UserService {
             // 이미 탈퇴한 사용자인지 확인
             if (Boolean.TRUE.equals(user.getIsDeleted())) {
                 throw new IllegalArgumentException("이미 탈퇴한 사용자입니다: " + userId);
+            }
+            
+            // Apple 사용자인 경우 Apple 서버에서 계정 삭제
+            if ("apple".equals(user.getOauthProvider()) && user.getAppleRefreshToken() != null) {
+                try {
+                    log.info("Revoking Apple token for user: {} ({})", user.getEmail(), userId);
+                    appleOAuthClient.revokeToken(user.getAppleRefreshToken());
+                    log.info("Apple token revoked successfully for user: {} ({})", user.getEmail(), userId);
+                } catch (Exception e) {
+                    // Apple Token Revocation 실패 시 경고 로그만 남기고 계속 진행
+                    // (DB에서 삭제는 진행되어야 하므로)
+                    log.warn("Failed to revoke Apple token for user: {} ({}). Error: {}", 
+                        user.getEmail(), userId, e.getMessage());
+                }
+            } else if ("apple".equals(user.getOauthProvider())) {
+                log.warn("Apple refresh token not found for user: {} ({}). Cannot revoke Apple token.", 
+                    user.getEmail(), userId);
             }
             
             // 소프트 삭제 (isDeleted = true)

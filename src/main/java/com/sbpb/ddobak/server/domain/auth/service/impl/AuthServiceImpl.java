@@ -45,22 +45,42 @@ public class AuthServiceImpl implements AuthService {
             // 2. 기존 사용자 조회 또는 신규 사용자 생성
             User user = findOrCreateUser(oAuthUserInfo);
             
-            // 3. 로그인 시간 업데이트
+            // 3. Authorization Code가 있으면 Apple Refresh Token 발급 및 저장
+            if (request.getAuthorizationCode() != null && !request.getAuthorizationCode().isEmpty()) {
+                try {
+                    AppleOAuthClient.AppleTokenResponse appleTokenResponse = 
+                        appleOAuthClient.getTokens(request.getAuthorizationCode());
+                    
+                    // Apple Refresh Token 저장 (계정 삭제 시 사용)
+                    user.updateAppleRefreshToken(appleTokenResponse.getRefreshToken());
+                    log.info("Apple refresh token saved for user: {} ({})", user.getEmail(), user.getId());
+                } catch (Exception e) {
+                    // Refresh Token 발급 실패 시 경고 로그만 남기고 계속 진행
+                    // (Identity Token만으로도 로그인은 가능하므로)
+                    log.warn("Failed to get Apple refresh token for user: {} ({}). Error: {}", 
+                        user.getEmail(), user.getId(), e.getMessage());
+                }
+            } else {
+                log.warn("Authorization code not provided. Apple refresh token will not be saved for user: {} ({})", 
+                    user.getEmail(), user.getId());
+            }
+            
+            // 4. 로그인 시간 업데이트
             user.updateLastLoginAt();
             userRepository.save(user);
             
-            // 4. JWT 토큰 생성
+            // 5. JWT 토큰 생성
             String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
             String refreshToken = jwtService.generateRefreshToken(user.getId());
             
-            // 5. 리프레시 토큰 저장
+            // 6. 리프레시 토큰 저장
             tokenService.saveRefreshToken(
                 user.getId(), 
                 refreshToken, 
                 jwtService.getRefreshTokenExpirationInMillis()
             );
             
-            // 6. 절대 만료 기간 설정 (최초 로그인 또는 재로그인 시)
+            // 7. 절대 만료 기간 설정 (최초 로그인 또는 재로그인 시)
             tokenService.setAbsoluteExpiry(
                 user.getId(), 
                 jwtService.getAbsoluteTokenExpirationInMillis()
