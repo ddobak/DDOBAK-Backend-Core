@@ -5,10 +5,9 @@ set -e
 
 echo "🚀 프로덕션 환경을 시작합니다..."
 
-# prod 브랜치로 체크아웃 및 최신 코드 가져오기
+# 최신 코드 가져오기 (현재 브랜치 유지)
 echo "📥 최신 코드를 가져옵니다..."
-git checkout prod
-git pull origin prod
+git pull origin dev
 
 # 현재 실행중인 프로세스 종료
 echo "🛑 기존 프로세스를 종료합니다..."

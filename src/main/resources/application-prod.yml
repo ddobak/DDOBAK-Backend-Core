@@ -17,7 +17,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: validate  # 프로덕션에서는 스키마 검증만
+      ddl-auto: update  # 상용에서도 테이블 생성/업데이트 허용
     properties:
       hibernate:
         show-sql: false  # 상용에서는 쿼리 로그 비활성화
