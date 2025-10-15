@@ -18,9 +18,11 @@ echo "🔍 실행중인 자바 프로세스를 확인합니다..."
 ps aux | grep java | grep -v grep || echo "실행중인 자바 프로세스가 없습니다."
 
 # 환경 변수 로드
+# export 방식은 한 줄에 여러 환경변수 처리할 때 공백 처리에 문제가 있음 -> source로 변경!
+
 if [ -f ".env.prod" ]; then
     echo "📋 환경 변수를 로드합니다..."
-    export $(cat .env.prod | grep -v '^#' | xargs)
+    source .env.prod
 else
     echo "⚠️  .env.prod 파일이 없습니다. 기본 설정으로 실행합니다."
 fi
@@ -30,8 +32,8 @@ echo "📦 JAR 파일을 생성합니다..."
 ./gradlew clean bootJar
 
 # 메모리 제한으로 실행
-echo "☕ 애플리케이션을 실행합니다 (메모리 제한: 512MB)..."
-nohup java -Xmx512m -Xms256m -jar build/libs/main-server-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+echo "☕ 애플리케이션을 실행합니다 (메모리 제한: 512MB, Profile: prod)..."
+nohup java -Xmx512m -Xms256m -Dspring.profiles.active=prod -Dlogging.level.com.sbpb.ddobak=DEBUG -jar build/libs/main-server-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
 
 # 프로세스 ID 저장
 echo $! > app.pid
