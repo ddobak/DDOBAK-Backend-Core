@@ -2,7 +2,6 @@ package com.sbpb.ddobak.server.domain.user.service;
 
 import com.sbpb.ddobak.server.common.exception.DuplicateResourceException;
 import com.sbpb.ddobak.server.common.exception.ResourceNotFoundException;
-import com.sbpb.ddobak.server.domain.auth.oauth.AppleOAuthClient;
 import com.sbpb.ddobak.server.domain.auth.service.JwtService;
 import com.sbpb.ddobak.server.domain.user.dto.CreateUserRequest;
 import com.sbpb.ddobak.server.domain.user.dto.UserProfileRequest;
@@ -41,7 +40,6 @@ public class UserService {
     private final ToxicClauseRepository toxicClauseRepository;
     private final ContractRepository contractRepository;
     private final UserTokenRepository userTokenRepository;
-    private final AppleOAuthClient appleOAuthClient;
 
     /**
      * 사용자 생성 (테스트용)
@@ -184,22 +182,9 @@ public class UserService {
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
             
-            // Apple 사용자인 경우 Apple 서버에서 계정 삭제
-            if ("apple".equals(user.getOauthProvider()) && user.getAppleRefreshToken() != null) {
-                try {
-                    log.info("Revoking Apple token for user: {} ({})", user.getEmail(), userId);
-                    appleOAuthClient.revokeToken(user.getAppleRefreshToken());
-                    log.info("Apple token revoked successfully for user: {} ({})", user.getEmail(), userId);
-                } catch (Exception e) {
-                    // Apple Token Revocation 실패 시 경고 로그만 남기고 계속 진행
-                    // (DB에서 삭제는 진행되어야 하므로)
-                    log.warn("Failed to revoke Apple token for user: {} ({}). Error: {}", 
-                        user.getEmail(), userId, e.getMessage());
-                }
-            } else if ("apple".equals(user.getOauthProvider())) {
-                log.warn("Apple refresh token not found for user: {} ({}). Cannot revoke Apple token.", 
-                    user.getEmail(), userId);
-            }
+            // Apple token revoke는 하지 않음 (재가입 시 이메일 제공을 위해)
+            // Apple 서버에 알리지 않고 DB에서만 삭제
+            // 우리 서버에서 모든 데이터가 삭제되므로 App Store 가이드라인 준수
             
             // 1. 사용자의 모든 계약서 조회 및 삭제 (CASCADE로 OcrContent, ContractAnalysis, ToxicClause도 함께 삭제됨)
             List<Contract> userContracts = contractRepository.findByUserIdOrderByCreatedAtDesc(userId);
