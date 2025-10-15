@@ -42,14 +42,14 @@ public class AuthServiceImpl implements AuthService {
             // 1. Apple Identity Token 검증 및 사용자 정보 추출
             OAuthUserInfo oAuthUserInfo = appleOAuthClient.getUserInfo(request.getIdentityToken());
             
-            // 2. 신규 사용자 여부 확인 (authorizationCode 유무로 판단)
-            boolean isNewUser = (request.getAuthorizationCode() != null && !request.getAuthorizationCode().isEmpty());
+            // 2. 신규 사용자 여부 확인 (DB에 사용자 존재 여부로 판단)
+            boolean isNewUser = !userRepository.findByAppleId(oAuthUserInfo.getProviderId()).isPresent();
             
             // 3. 기존 사용자 조회 또는 신규 사용자 생성
             User user = findOrCreateUser(oAuthUserInfo, request.getAuthorizationCode());
             
             // 4. Authorization Code가 있으면 Apple Refresh Token 발급 및 저장
-            if (isNewUser) {
+            if (request.getAuthorizationCode() != null && !request.getAuthorizationCode().isEmpty()) {
                 try {
                     AppleOAuthClient.AppleTokenResponse appleTokenResponse = 
                         appleOAuthClient.getTokens(request.getAuthorizationCode());
