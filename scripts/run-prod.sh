@@ -18,11 +18,13 @@ echo "🔍 실행중인 자바 프로세스를 확인합니다..."
 ps aux | grep java | grep -v grep || echo "실행중인 자바 프로세스가 없습니다."
 
 # 환경 변수 로드
-# export 방식은 한 줄에 여러 환경변수 처리할 때 공백 처리에 문제가 있음 -> source로 변경!
+# set -a를 사용하면 이후 모든 변수가 자동으로 export됨
 
 if [ -f ".env.prod" ]; then
     echo "📋 환경 변수를 로드합니다..."
+    set -a  # 모든 변수를 자동으로 export
     source .env.prod
+    set +a  # export 자동화 해제
 else
     echo "⚠️  .env.prod 파일이 없습니다. 기본 설정으로 실행합니다."
 fi
