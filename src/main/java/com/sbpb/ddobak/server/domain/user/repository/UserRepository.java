@@ -15,22 +15,32 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
-     * 이메일로 사용자 조회
+     * 이메일로 활성 사용자 조회 (삭제되지 않은 사용자만)
      */
-    Optional<User> findByEmail(String email);
+    @Query("SELECT u FROM User u WHERE u.email = :email AND u.isDeleted = false")
+    Optional<User> findByEmail(@Param("email") String email);
 
     /**
-     * 이메일 존재 여부 확인
+     * 이메일 존재 여부 확인 (활성 사용자만)
      */
-    boolean existsByEmail(String email);
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.email = :email AND u.isDeleted = false")
+    boolean existsByEmail(@Param("email") String email);
 
     /**
-     * Apple ID로 사용자 조회
+     * Apple ID로 활성 사용자 조회 (삭제되지 않은 사용자만)
+     * @param appleId Apple OAuth Provider ID
+     * @return 사용자 Optional
+     */
+    @Query("SELECT u FROM User u WHERE u.oauthProvider = 'apple' AND u.oauthProviderId = :appleId AND u.isDeleted = false")
+    Optional<User> findByAppleId(@Param("appleId") String appleId);
+
+    /**
+     * Apple ID로 사용자 조회 (삭제 여부 무관, 재가입 처리용)
      * @param appleId Apple OAuth Provider ID
      * @return 사용자 Optional
      */
     @Query("SELECT u FROM User u WHERE u.oauthProvider = 'apple' AND u.oauthProviderId = :appleId")
-    Optional<User> findByAppleId(@Param("appleId") String appleId);
+    Optional<User> findByAppleIdIncludingDeleted(@Param("appleId") String appleId);
 
     /**
      * OAuth 제공자와 Provider ID로 사용자 조회

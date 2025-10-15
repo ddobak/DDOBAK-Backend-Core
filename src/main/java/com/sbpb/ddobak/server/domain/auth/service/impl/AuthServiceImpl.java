@@ -43,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
             OAuthUserInfo oAuthUserInfo = appleOAuthClient.getUserInfo(request.getIdentityToken());
             
             // 2. 기존 사용자 조회 또는 신규 사용자 생성
-            User user = findOrCreateUser(oAuthUserInfo);
+            User user = findOrCreateUser(oAuthUserInfo, request.getAuthorizationCode());
             
             // 3. Authorization Code가 있으면 Apple Refresh Token 발급 및 저장
             if (request.getAuthorizationCode() != null && !request.getAuthorizationCode().isEmpty()) {
@@ -55,14 +55,11 @@ public class AuthServiceImpl implements AuthService {
                     user.updateAppleRefreshToken(appleTokenResponse.getRefreshToken());
                     log.info("Apple refresh token saved for user: {} ({})", user.getEmail(), user.getId());
                 } catch (Exception e) {
-                    // Refresh Token 발급 실패 시 경고 로그만 남기고 계속 진행
-                    // (Identity Token만으로도 로그인은 가능하므로)
-                    log.warn("Failed to get Apple refresh token for user: {} ({}). Error: {}", 
+                    // Refresh Token 발급 실패 시 에러 (탈퇴 시 필수이므로)
+                    log.error("Failed to get Apple refresh token for user: {} ({}). Error: {}", 
                         user.getEmail(), user.getId(), e.getMessage());
+                    throw new IllegalArgumentException("Apple refresh token 발급 실패: " + e.getMessage());
                 }
-            } else {
-                log.warn("Authorization code not provided. Apple refresh token will not be saved for user: {} ({})", 
-                    user.getEmail(), user.getId());
             }
             
             // 4. 로그인 시간 업데이트
@@ -229,22 +226,43 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 기존 사용자 조회 또는 신규 사용자 생성
      * @param oAuthUserInfo OAuth로 받은 사용자 정보
+     * @param authorizationCode Apple Authorization Code (신규/재활성화 시 필수)
      * @return 사용자 엔티티
      */
-    private User findOrCreateUser(OAuthUserInfo oAuthUserInfo) {
-        // Apple Provider ID로 기존 사용자 검색
-        Optional<User> existingUser = userRepository.findByAppleId(oAuthUserInfo.getProviderId());
+    private User findOrCreateUser(OAuthUserInfo oAuthUserInfo, String authorizationCode) {
+        // Apple Provider ID로 기존 사용자 검색 (삭제된 사용자 포함)
+        Optional<User> existingUser = userRepository.findByAppleIdIncludingDeleted(oAuthUserInfo.getProviderId());
         
         if (existingUser.isPresent()) {
-            // 기존 사용자 정보 업데이트 (이메일이 변경될 수 있음)
             User user = existingUser.get();
+            
+            // 탈퇴한 사용자인 경우 재활성화 (authorizationCode 필수)
+            if (Boolean.TRUE.equals(user.getIsDeleted())) {
+                if (authorizationCode == null || authorizationCode.isEmpty()) {
+                    log.error("Authorization code required for reactivating user: {} ({})", 
+                        oAuthUserInfo.getEmail(), oAuthUserInfo.getProviderId());
+                    throw new IllegalArgumentException(
+                        "재가입 시 Apple 인증이 필요합니다. Apple 설정에서 앱 연결을 해제한 후 다시 로그인해주세요.");
+                }
+                user.reactivate();
+                log.info("User reactivated after withdrawal: {} ({})", user.getEmail(), user.getId());
+            }
+            
+            // 기존 사용자 정보 업데이트 (이메일이 변경될 수 있음)
             if (!user.getEmail().equals(oAuthUserInfo.getEmail())) {
                 user.updateEmail(oAuthUserInfo.getEmail());
                 log.info("User email updated: {} -> {}", user.getEmail(), oAuthUserInfo.getEmail());
             }
+            
             return user;
         } else {
-            // 신규 사용자 생성
+            // 신규 사용자 생성 (authorizationCode 필수)
+            if (authorizationCode == null || authorizationCode.isEmpty()) {
+                log.error("Authorization code required for new user: {}", oAuthUserInfo.getEmail());
+                throw new IllegalArgumentException(
+                    "최초 가입 시 Apple 인증이 필요합니다. Apple 로그인을 다시 시도해주세요.");
+            }
+            
             User newUser = User.builder()
                 .email(oAuthUserInfo.getEmail())
                 .name(oAuthUserInfo.getName() != null ? oAuthUserInfo.getName() : "Apple User")
