@@ -147,6 +147,7 @@ public class AppleOAuthClient implements OAuthClient {
             return AppleTokenResponse.builder()
                 .accessToken((String) responseMap.get("access_token"))
                 .refreshToken((String) responseMap.get("refresh_token"))
+                .idToken((String) responseMap.get("id_token"))  // id_token도 포함
                 .expiresIn((Integer) responseMap.get("expires_in"))
                 .tokenType((String) responseMap.get("token_type"))
                 .build();
@@ -204,6 +205,7 @@ public class AppleOAuthClient implements OAuthClient {
     public static class AppleTokenResponse {
         private String accessToken;
         private String refreshToken;
+        private String idToken;  // ID Token (사용자 정보 포함)
         private Integer expiresIn;
         private String tokenType;
     }

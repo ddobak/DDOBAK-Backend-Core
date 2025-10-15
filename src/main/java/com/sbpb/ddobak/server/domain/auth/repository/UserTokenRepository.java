@@ -2,6 +2,7 @@ package com.sbpb.ddobak.server.domain.auth.repository;
 
 import com.sbpb.ddobak.server.domain.auth.entity.UserToken;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -31,5 +32,6 @@ public interface UserTokenRepository extends JpaRepository<UserToken, Long> {
      * 사용자 ID로 토큰 삭제
      * @param userId 사용자 ID
      */
+    @Modifying
     void deleteByUserId(Long userId);
 }

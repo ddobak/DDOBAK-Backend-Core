@@ -45,14 +45,35 @@ public class AuthServiceImpl implements AuthService {
             // 2. 신규 사용자 여부 확인 (authorizationCode 유무로 판단)
             boolean isNewUser = (request.getAuthorizationCode() != null && !request.getAuthorizationCode().isEmpty());
             
-            // 3. 기존 사용자 조회 또는 신규 사용자 생성
+            // 3. 이메일이 없고 authorizationCode가 있으면 id_token에서 이메일 추출 (재가입 시)
+            AppleOAuthClient.AppleTokenResponse appleTokenResponse = null;
+            if (oAuthUserInfo.getEmail() == null && isNewUser) {
+                try {
+                    appleTokenResponse = appleOAuthClient.getTokens(request.getAuthorizationCode());
+                    
+                    if (appleTokenResponse.getIdToken() != null) {
+                        OAuthUserInfo updatedUserInfo = appleOAuthClient.getUserInfo(appleTokenResponse.getIdToken());
+                        if (updatedUserInfo.getEmail() != null) {
+                            oAuthUserInfo = updatedUserInfo;  // 이메일이 포함된 정보로 교체
+                            log.info("Email extracted from id_token: {}", updatedUserInfo.getEmail());
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to extract email from id_token: {}", e.getMessage());
+                    throw new IllegalArgumentException("이메일 정보를 가져올 수 없습니다. Apple 로그인을 다시 시도해주세요.");
+                }
+            }
+            
+            // 4. 기존 사용자 조회 또는 신규 사용자 생성
             User user = findOrCreateUser(oAuthUserInfo, request.getAuthorizationCode());
             
-            // 4. Authorization Code가 있으면 Apple Refresh Token 발급 및 저장
+            // 5. Authorization Code가 있으면 Apple Refresh Token 발급 및 저장
             if (isNewUser) {
                 try {
-                    AppleOAuthClient.AppleTokenResponse appleTokenResponse = 
-                        appleOAuthClient.getTokens(request.getAuthorizationCode());
+                    // 이미 토큰을 가져왔으면 재사용, 아니면 새로 요청
+                    if (appleTokenResponse == null) {
+                        appleTokenResponse = appleOAuthClient.getTokens(request.getAuthorizationCode());
+                    }
                     
                     // Apple Refresh Token 저장 (계정 삭제 시 사용)
                     user.updateAppleRefreshToken(appleTokenResponse.getRefreshToken());
@@ -65,22 +86,22 @@ public class AuthServiceImpl implements AuthService {
                 }
             }
             
-            // 5. 로그인 시간 업데이트
+            // 6. 로그인 시간 업데이트
             user.updateLastLoginAt();
             userRepository.save(user);
             
-            // 6. JWT 토큰 생성
+            // 7. JWT 토큰 생성
             String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
             String refreshToken = jwtService.generateRefreshToken(user.getId());
             
-            // 7. 리프레시 토큰 저장
+            // 8. 리프레시 토큰 저장
             tokenService.saveRefreshToken(
                 user.getId(), 
                 refreshToken, 
                 jwtService.getRefreshTokenExpirationInMillis()
             );
             
-            // 8. 절대 만료 기간 설정 (최초 로그인 또는 재로그인 시)
+            // 9. 절대 만료 기간 설정 (최초 로그인 또는 재로그인 시)
             tokenService.setAbsoluteExpiry(
                 user.getId(), 
                 jwtService.getAbsoluteTokenExpirationInMillis()
