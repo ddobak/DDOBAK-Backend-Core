@@ -11,9 +11,12 @@ import com.sbpb.ddobak.server.domain.user.dto.UserResponse;
 import com.sbpb.ddobak.server.domain.user.dto.UserAnalysesResponse;
 import com.sbpb.ddobak.server.domain.user.entity.User;
 import com.sbpb.ddobak.server.domain.user.repository.UserRepository;
+import com.sbpb.ddobak.server.domain.documentProcess.entity.Contract;
 import com.sbpb.ddobak.server.domain.documentProcess.entity.ContractAnalysis;
 import com.sbpb.ddobak.server.domain.documentProcess.repository.ContractAnalysisRepository;
+import com.sbpb.ddobak.server.domain.documentProcess.repository.ContractRepository;
 import com.sbpb.ddobak.server.domain.documentProcess.repository.ToxicClauseRepository;
+import com.sbpb.ddobak.server.domain.auth.repository.UserTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,8 @@ public class UserService {
     private final JwtService jwtService;
     private final ContractAnalysisRepository contractAnalysisRepository;
     private final ToxicClauseRepository toxicClauseRepository;
+    private final ContractRepository contractRepository;
+    private final UserTokenRepository userTokenRepository;
     private final AppleOAuthClient appleOAuthClient;
 
     /**
@@ -112,14 +117,9 @@ public class UserService {
         log.info("Getting user profile: userId={}", userId);
         
         try {
-            // 사용자 조회
+            // 사용자 조회 (하드 삭제 방식이므로 삭제된 사용자는 조회 안됨)
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
-            
-            // 사용자 활성 상태 확인
-            if (Boolean.TRUE.equals(user.getIsDeleted())) {
-                throw new IllegalArgumentException("비활성화된 사용자입니다: " + userId);
-            }
             
             log.info("User profile retrieved successfully for userId: {}", userId);
             
@@ -177,17 +177,12 @@ public class UserService {
 
     @Transactional
     public void withdrawUser(Long userId) {
-        log.info("Withdrawing user: userId={}", userId);
+        log.info("Withdrawing user (hard delete): userId={}", userId);
         
         try {
             // 사용자 조회
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + userId));
-            
-            // 이미 탈퇴한 사용자인지 확인
-            if (Boolean.TRUE.equals(user.getIsDeleted())) {
-                throw new IllegalArgumentException("이미 탈퇴한 사용자입니다: " + userId);
-            }
             
             // Apple 사용자인 경우 Apple 서버에서 계정 삭제
             if ("apple".equals(user.getOauthProvider()) && user.getAppleRefreshToken() != null) {
@@ -206,14 +201,23 @@ public class UserService {
                     user.getEmail(), userId);
             }
             
-            // 소프트 삭제 (isDeleted = true)
-            user.delete();
-            userRepository.save(user);
+            // 1. 사용자의 모든 계약서 조회 및 삭제 (CASCADE로 OcrContent, ContractAnalysis, ToxicClause도 함께 삭제됨)
+            List<Contract> userContracts = contractRepository.findByUserIdOrderByCreatedAtDesc(userId);
+            if (!userContracts.isEmpty()) {
+                contractRepository.deleteAll(userContracts);
+                log.info("Deleted {} contracts for user: {}", userContracts.size(), userId);
+            }
             
-            log.info("User withdrawn successfully: userId={}", userId);
+            // 2. 사용자 토큰 삭제
+            userTokenRepository.deleteByUserId(userId);
+            log.info("Deleted tokens for user: {}", userId);
+            
+            // 3. 사용자 삭제 (하드 삭제)
+            userRepository.delete(user);
+            log.info("User hard deleted successfully: userId={}, email={}", userId, user.getEmail());
             
         } catch (Exception e) {
-            log.error("Failed to withdraw user: {}", e.getMessage());
+            log.error("Failed to withdraw user: {}", e.getMessage(), e);
             throw new IllegalArgumentException("회원 탈퇴 실패: " + e.getMessage());
         }
     }

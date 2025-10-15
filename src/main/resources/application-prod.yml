@@ -53,7 +53,7 @@ apple:
 # JWT 설정 (상용)
 jwt:
   secret: ${JWT_SECRET:CHANGE_THIS_IN_PRODUCTION_ENVIRONMENT}
-  access-token-expiration: 3600000   # 1시간 (밀리초)
+  access-token-expiration: 7200000   # 2시간 (밀리초)
   refresh-token-expiration: 604800000 # 7일 (밀리초)
 
 # AWS 설정 (상용)

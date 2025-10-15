@@ -42,11 +42,14 @@ public class AuthServiceImpl implements AuthService {
             // 1. Apple Identity Token 검증 및 사용자 정보 추출
             OAuthUserInfo oAuthUserInfo = appleOAuthClient.getUserInfo(request.getIdentityToken());
             
-            // 2. 기존 사용자 조회 또는 신규 사용자 생성
+            // 2. 신규 사용자 여부 확인 (authorizationCode 유무로 판단)
+            boolean isNewUser = (request.getAuthorizationCode() != null && !request.getAuthorizationCode().isEmpty());
+            
+            // 3. 기존 사용자 조회 또는 신규 사용자 생성
             User user = findOrCreateUser(oAuthUserInfo, request.getAuthorizationCode());
             
-            // 3. Authorization Code가 있으면 Apple Refresh Token 발급 및 저장
-            if (request.getAuthorizationCode() != null && !request.getAuthorizationCode().isEmpty()) {
+            // 4. Authorization Code가 있으면 Apple Refresh Token 발급 및 저장
+            if (isNewUser) {
                 try {
                     AppleOAuthClient.AppleTokenResponse appleTokenResponse = 
                         appleOAuthClient.getTokens(request.getAuthorizationCode());
@@ -62,28 +65,28 @@ public class AuthServiceImpl implements AuthService {
                 }
             }
             
-            // 4. 로그인 시간 업데이트
+            // 5. 로그인 시간 업데이트
             user.updateLastLoginAt();
             userRepository.save(user);
             
-            // 5. JWT 토큰 생성
+            // 6. JWT 토큰 생성
             String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
             String refreshToken = jwtService.generateRefreshToken(user.getId());
             
-            // 6. 리프레시 토큰 저장
+            // 7. 리프레시 토큰 저장
             tokenService.saveRefreshToken(
                 user.getId(), 
                 refreshToken, 
                 jwtService.getRefreshTokenExpirationInMillis()
             );
             
-            // 7. 절대 만료 기간 설정 (최초 로그인 또는 재로그인 시)
+            // 8. 절대 만료 기간 설정 (최초 로그인 또는 재로그인 시)
             tokenService.setAbsoluteExpiry(
                 user.getId(), 
                 jwtService.getAbsoluteTokenExpirationInMillis()
             );
             
-            log.info("Apple login successful for user: {} ({})", user.getEmail(), user.getId());
+            log.info("Apple login successful for user: {} ({}), isNewUser: {}", user.getEmail(), user.getId(), isNewUser);
             
             return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -91,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
                 .expiresIn(jwtService.getAccessTokenExpirationInSeconds())
                 .userId(user.getId())
                 .email(user.getEmail())
-                .isNewUser("Apple User".equals(user.getName())) // 이름이 기본값인 경우 신규 사용자로 간주
+                .isNewUser(isNewUser)
                 .build();
                 
         } catch (Exception e) {
@@ -226,27 +229,16 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 기존 사용자 조회 또는 신규 사용자 생성
      * @param oAuthUserInfo OAuth로 받은 사용자 정보
-     * @param authorizationCode Apple Authorization Code (신규/재활성화 시 필수)
+     * @param authorizationCode Apple Authorization Code (신규 가입 시 필수)
      * @return 사용자 엔티티
      */
     private User findOrCreateUser(OAuthUserInfo oAuthUserInfo, String authorizationCode) {
-        // Apple Provider ID로 기존 사용자 검색 (삭제된 사용자 포함)
-        Optional<User> existingUser = userRepository.findByAppleIdIncludingDeleted(oAuthUserInfo.getProviderId());
+        // Apple Provider ID로 기존 활성 사용자 검색 (탈퇴한 사용자는 DB에서 삭제되므로 조회 안됨)
+        Optional<User> existingUser = userRepository.findByAppleId(oAuthUserInfo.getProviderId());
         
         if (existingUser.isPresent()) {
+            // 기존 활성 사용자 - 로그인
             User user = existingUser.get();
-            
-            // 탈퇴한 사용자인 경우 재활성화 (authorizationCode 필수)
-            if (Boolean.TRUE.equals(user.getIsDeleted())) {
-                if (authorizationCode == null || authorizationCode.isEmpty()) {
-                    log.error("Authorization code required for reactivating user: {} ({})", 
-                        oAuthUserInfo.getEmail(), oAuthUserInfo.getProviderId());
-                    throw new IllegalArgumentException(
-                        "재가입 시 Apple 인증이 필요합니다. Apple 설정에서 앱 연결을 해제한 후 다시 로그인해주세요.");
-                }
-                user.reactivate();
-                log.info("User reactivated after withdrawal: {} ({})", user.getEmail(), user.getId());
-            }
             
             // 기존 사용자 정보 업데이트 (이메일이 변경될 수 있음)
             if (!user.getEmail().equals(oAuthUserInfo.getEmail())) {
@@ -254,6 +246,7 @@ public class AuthServiceImpl implements AuthService {
                 log.info("User email updated: {} -> {}", user.getEmail(), oAuthUserInfo.getEmail());
             }
             
+            log.info("Existing user logged in: {} ({})", user.getEmail(), user.getId());
             return user;
         } else {
             // 신규 사용자 생성 (authorizationCode 필수)

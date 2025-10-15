@@ -121,25 +121,6 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * 사용자 삭제 처리 (소프트 삭제)
-     * Apple refresh token도 함께 초기화 (이미 revoke되었으므로)
-     */
-    public void delete() {
-        this.isDeleted = true;
-        this.appleRefreshToken = null;  // revoke 후 토큰 초기화
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * 사용자 재활성화 (탈퇴 후 재가입 시)
-     * Apple refresh token을 초기화하여 재가입 시 새로운 토큰을 받도록 함
-     */
-    public void reactivate() {
-        this.isDeleted = false;
-        this.appleRefreshToken = null;  // 이전 토큰은 이미 revoke되었으므로 초기화
-        this.updatedAt = LocalDateTime.now();
-    }
 
     /**
      * 이메일 업데이트

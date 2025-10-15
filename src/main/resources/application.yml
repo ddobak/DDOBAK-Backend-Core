@@ -62,7 +62,7 @@ apple:
 jwt:
   # 키 생성: openssl rand -base64 64
   secret: ${JWT_SECRET:CHANGE_THIS_IN_PRODUCTION_ENVIRONMENT}
-  access-token-expiration: 3600000   # 1시간 (밀리초)
+  access-token-expiration: 7200000   # 2시간 (밀리초)
   refresh-token-expiration: 604800000 # 7일 (밀리초)
 
 # AWS 설정 (공유 리소스 사용)
