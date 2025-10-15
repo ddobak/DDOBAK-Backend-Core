@@ -31,6 +31,13 @@ public class TipArticleService {
         log.info("꿀팁 아티클 목록 조회 시작");
         
         List<TipArticle> tipArticles = tipArticleRepository.findAllByOrderByCreatedAtDesc();
+        log.info("DB 조회 결과: {} 건", tipArticles.size());
+        
+        if (tipArticles.isEmpty()) {
+            log.warn("꿀팁 아티클이 비어있습니다. DB 연결 또는 스키마를 확인하세요.");
+        } else {
+            log.info("첫 번째 아티클: ID={}, Title={}", tipArticles.get(0).getId(), tipArticles.get(0).getTitle());
+        }
         
         List<TipArticleListResponse> responses = tipArticles.stream()
                 .map(TipArticleListResponse::from)
