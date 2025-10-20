@@ -48,4 +48,11 @@ public interface DocumentProcessService {
      * @param userId 사용자 ID (소유자 검증용)
      */
     AnalysisResultResponse getAnalysisResult(String contractId, String analysisId, Long userId);
+
+    /**
+     * 계약서 삭제
+     * @param contractId 계약서 ID
+     * @param userId 사용자 ID (소유자 검증용)
+     */
+    void deleteContract(String contractId, Long userId);
 } 

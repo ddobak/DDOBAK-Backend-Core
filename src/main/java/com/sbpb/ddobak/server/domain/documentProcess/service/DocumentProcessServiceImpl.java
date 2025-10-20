@@ -57,7 +57,14 @@ public class DocumentProcessServiceImpl implements DocumentProcessService {
         verifyContractOwner(contractId, userId);
         return analysisProcessService.getAnalysisResult(contractId, analysisId);
     }
-    
+
+    @Override
+    public void deleteContract(String contractId, Long userId) {
+        // 계약서 소유자 검증
+        verifyContractOwner(contractId, userId);
+        ocrProcessService.deleteContract(contractId);
+    }
+
     /**
      * 계약서 소유자 검증
      * @param contractId 계약서 ID

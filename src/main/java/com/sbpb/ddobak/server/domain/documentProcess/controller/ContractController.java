@@ -96,11 +96,26 @@ public class ContractController {
             @PathVariable("contractId") String contractId,
             @PathVariable("analysisId") String analysisId,
             @RequestHeader("Authorization") String authorization) {
-        
+
         Long userId = extractUserIdFromToken(authorization);
-        
+
         AnalysisResultResponse response = documentProcessService.getAnalysisResult(contractId, analysisId, userId);
         return ApiResponse.success(response, SuccessCode.SUCCESS);
+    }
+
+    /**
+     * 계약서 삭제
+     * DELETE /contract/{contractId}
+     */
+    @DeleteMapping("/{contractId}")
+    public ApiResponse<Void> deleteContract(
+            @PathVariable("contractId") String contractId,
+            @RequestHeader("Authorization") String authorization) {
+
+        Long userId = extractUserIdFromToken(authorization);
+
+        documentProcessService.deleteContract(contractId, userId);
+        return ApiResponse.success(SuccessCode.SUCCESS);
     }
 
     /**

@@ -271,7 +271,7 @@ public class OcrProcessService {
     /**
      * 계약서 소유자 검증
      * 계약서 소유자가 아닌 경우 예외 발생
-     * 
+     *
      * @param contractId 계약서 ID
      * @param userId 사용자 ID
      * @throws ResourceNotFoundException 계약서를 찾을 수 없는 경우
@@ -280,16 +280,35 @@ public class OcrProcessService {
     @Transactional(readOnly = true)
     public void verifyContractOwner(String contractId, Long userId) {
         log.debug("계약서 소유자 검증 - ContractId: {}, UserId: {}", contractId, userId);
-        
+
         Contract contract = contractRepository.findById(contractId)
             .orElseThrow(() -> new ResourceNotFoundException("Contract", "id", contractId));
-        
+
         if (!contract.getUserId().equals(userId)) {
-            log.warn("계약서 접근 권한 없음 - ContractId: {}, 요청 UserId: {}, 소유자 UserId: {}", 
+            log.warn("계약서 접근 권한 없음 - ContractId: {}, 요청 UserId: {}, 소유자 UserId: {}",
                     contractId, userId, contract.getUserId());
             throw new ContractAccessDeniedException(contractId, userId);
         }
-        
+
         log.debug("계약서 소유자 검증 성공 - ContractId: {}, UserId: {}", contractId, userId);
+    }
+
+    /**
+     * 계약서 삭제
+     * Contract 삭제 시 JPA Cascade에 의해 OcrContent, ContractAnalysis, ToxicClause가 자동 삭제됨
+     *
+     * @param contractId 계약서 ID
+     * @throws ResourceNotFoundException 계약서를 찾을 수 없는 경우
+     */
+    public void deleteContract(String contractId) {
+        log.info("계약서 삭제 시작 - ContractId: {}", contractId);
+
+        Contract contract = contractRepository.findById(contractId)
+            .orElseThrow(() -> new ResourceNotFoundException("Contract", "id", contractId));
+
+        // Contract 삭제 - Cascade로 연관 데이터 자동 삭제
+        contractRepository.delete(contract);
+
+        log.info("계약서 삭제 완료 - ContractId: {}", contractId);
     }
 } 
